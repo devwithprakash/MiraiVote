@@ -10,6 +10,8 @@ import {
   generateResetToken,
   generateAccessToken,
   generateRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
 } from "../utils/jwt.utils.js";
 
 const hashToken = (rawToken) => {
@@ -65,7 +67,7 @@ const login = async ({ email, password }) => {
   }
 
   const accessToken = generateAccessToken({ id: user._id });
-  const refreshToken = generateAccessToken({ id: user._id });
+  const refreshToken = generateRefreshToken({ id: user._id });
 
   user.refreshToken = hashToken(refreshToken);
 
@@ -98,15 +100,32 @@ const verifyEmail = async (token) => {
     throw ApiError.badRequest("Verification token has expired");
   }
 
+  const accessToken = generateAccessToken({ id: user._id });
+  const refreshToken = generateRefreshToken({ id: user._id });
+
+  const hashedRefreshToken = hashToken(refreshToken);
+
+  console.log("hashedRefreshToken", hashedRefreshToken);
+
+  user.refreshToken = hashedRefreshToken;
+
   user.isVerified = true;
   user.verificationToken = undefined;
   user.verificationTokenExpires = undefined;
 
   await user.save();
+
+  const userObj = user.toObject();
+
+  delete userObj.password;
+  delete userObj.refreshToken;
+
+  return { user: userObj, accessToken, refreshToken };
 };
 
 const forgotPassword = async (email) => {
   const user = await User.findOne({ email });
+
 
   if (!user) {
     throw ApiError.notfound("User not found");
@@ -162,4 +181,45 @@ const resetPassword = async (token, password) => {
   await user.save();
 };
 
-export { register, login, logout, verifyEmail, forgotPassword, resetPassword };
+const refresh = async (token) => {
+  let payload;
+
+  try {
+    payload = verifyRefreshToken(token);
+  } catch (err) {
+    throw ApiError.unauthorized("Invalid or expired token");
+  }
+
+  if (!payload?.id) {
+    throw ApiError.unauthorized("Invalid token payload");
+  }
+
+  const hashedToken = hashToken(token);
+
+  const user = await User.findOne({
+    _id: payload.id,
+    refreshToken: hashedToken,
+  });
+
+  if (!user) {
+    throw ApiError.unauthorized("Invalid refresh session");
+  }
+
+  const accessToken = generateAccessToken({ id: user._id });
+
+  const userObj = user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
+
+  return { user: userObj, accessToken };
+};
+
+export {
+  register,
+  login,
+  logout,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  refresh,
+};

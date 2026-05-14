@@ -1,4 +1,5 @@
 import * as service from "../services/user.service.js";
+import ApiError from "../utils/api-error.js";
 import ApiResponse from "../utils/api-response.js";
 
 const register = async (req, res) => {
@@ -9,6 +10,8 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const result = await service.login(req.body);
+
+  console.log(result);
 
   res.cookie("refreshToken", result.refreshToken, {
     httpOnly: true,
@@ -34,9 +37,16 @@ const logout = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
-  await service.verifyEmail(req.params.token);
+  const result = await service.verifyEmail(req.params.token);
 
-  ApiResponse.noContent(res, "Email verified successfully");
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  ApiResponse.ok(res, "Email verified successfully", result);
 };
 
 const forgotPassword = async (req, res) => {
@@ -51,4 +61,26 @@ const resetPassword = async (req, res) => {
   ApiResponse.ok(res, "New password set successfully");
 };
 
-export { register, login, logout, verifyEmail, forgotPassword, resetPassword };
+const refresh = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({
+      message: "Refresh token missing",
+    });
+  }
+
+  const result = await service.refresh(refreshToken);
+
+  ApiResponse.ok(res, "Token refreshed", result);
+};
+
+export {
+  register,
+  login,
+  logout,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  refresh,
+};
