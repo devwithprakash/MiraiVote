@@ -15,7 +15,6 @@ const VerifyEmail = () => {
     const verifyEmail = async () => {
       try {
         const res = await authService.verifyEmail(token);
-        console.log("data response", res);
         if (res.success) {
           setAccessToken(res.data.accessToken);
 
@@ -25,7 +24,6 @@ const VerifyEmail = () => {
           }, 2000);
         }
       } catch (err) {
-        console.log("Why error")
         console.log(err);
         setStatus("error");
       }

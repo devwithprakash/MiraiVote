@@ -106,16 +106,12 @@ const CreatePoll = () => {
       };
 
       if (payload.title.length < 2)
-        throw new Error("Title must be at least 2 characters");
+        toast.error("Title must be at least 2 characters");
       if (!payload.expireAt) throw new Error("Expiry date is required");
       if (new Date(payload.expireAt) <= new Date())
         throw new Error("Expiry must be in the future");
 
-      console.log("Payload sent to backend:", payload);
-
       const data = await pollService.createPoll(payload, accessToken);
-
-      console.log(data);
 
       toast.success("Poll created successfully!");
       navigate("/dashboard");
@@ -129,7 +125,7 @@ const CreatePoll = () => {
       <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-4 pt-8">
         <div className="mb-10">
           <Link
-          to="/dashboard"
+            to="/dashboard"
             type="button"
             className="group flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-8 transition-colors"
           >

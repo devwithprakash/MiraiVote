@@ -9,39 +9,63 @@ import {
   Share2,
   PanelLeftClose,
   Vote,
+  Trash2,
 } from "lucide-react";
 import { pollService } from "../../services/poll.service.js";
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const PollCard = ({ title, description, votes, people, type, id }) => {
   const navigate = useNavigate();
+
+  const {accessToken} = useAuth()
 
   const handleNavigate = () => {
     navigate(`/poll/${id}`);
   };
 
+  const handleDelete = async () => {
+    try {
+      const data = await pollService.deletePoll(id, accessToken);
+
+      toast.success("Poll deleted successfully");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div
       onClick={handleNavigate}
-      className="group bg-[#0B1120] border border-slate-800 rounded-3xl p-6 hover:border-slate-700 hover:bg-[#0d1426] transition-all duration-300 hover:-translate-y-1"
+      className="group relative bg-[#0B1120] border border-slate-800 rounded-3xl p-6 hover:border-slate-700 hover:bg-[#0d1426] transition-all duration-300 hover:-translate-y-1"
     >
-      {/* Top */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h3 className="text-xl font-semibold text-white truncate">{title}</h3>
-
-          {description && (
-            <p className="text-slate-400 text-sm mt-2 line-clamp-2">
-              {description}
-            </p>
-          )}
-        </div>
-
-        <span className="shrink-0 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-medium border border-emerald-500/20">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">
           Live
         </span>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete();
+          }}
+          className="p-2 rounded-xl bg-slate-800/40 text-slate-400 border border-slate-700 cursor-pointer hover:bg-slate-500/10 hover:text-slate-400 hover:border-slate-500/30 transition"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      {/* Top Content */}
+      <div className="pr-16">
+        <h3 className="text-xl font-semibold text-white truncate">{title}</h3>
+
+        {description && (
+          <p className="text-slate-400 text-sm mt-2 line-clamp-2">
+            {description}
+          </p>
+        )}
       </div>
 
       {/* Stats */}
@@ -95,7 +119,6 @@ const Dashboard = () => {
         setLoading(true);
         const response = await pollService.fetchAllPolls(accessToken);
 
-        console.log(response);
         setPolls(response.data);
       } catch (error) {
         console.log(error);
@@ -133,9 +156,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {loading
           ? // Skeleton State
-            Array.from({ length: 6 }).map((_, i) => (
-              <PollCardSkeleton/>
-            ))
+            Array.from({ length: 6 }).map((_, i) => <PollCardSkeleton />)
           : // Actual Content
             polls?.map((poll) => (
               <PollCard

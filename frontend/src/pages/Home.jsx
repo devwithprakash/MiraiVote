@@ -284,7 +284,8 @@ export default function PulseBoard() {
         </p>
 
         <div className="fade-up-4 flex flex-col sm:flex-row gap-3 justify-center mb-4">
-          <button
+          <Link
+            to="/login"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 hover:scale-105 shadow-lg"
             style={{
               background: "linear-gradient(135deg,#a855f7,#6366f1)",
@@ -292,13 +293,14 @@ export default function PulseBoard() {
             }}
           >
             Create your first poll →
-          </button>
-          <button
+          </Link>
+          <Link
+            to="/login"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-gray-300 transition-all hover:text-white hover:bg-white/5"
             style={{ border: "1px solid rgba(255,255,255,0.12)" }}
           >
             I already have an account
-          </button>
+          </Link>
         </div>
 
         <div className="fade-up-4 flex items-center justify-center gap-5 text-xs text-gray-500 mb-14">

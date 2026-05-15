@@ -26,7 +26,6 @@ export const RegisterPage = () => {
       const data = await authService.register(registerDetails);
       toast.success("User logged in successfully");
       navigate("/verify-notice");
-      console.log(data);
     } catch (error) {
       console.log(error);
     } finally {

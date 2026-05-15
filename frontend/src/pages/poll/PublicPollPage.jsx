@@ -15,9 +15,7 @@ const PublicPollPage = () => {
   const { pollId } = useParams();
   const { accessToken } = useAuth();
 
-  // =========================
-  // DERIVED STATE
-  // =========================
+
   const isExpired = poll?.isExpired;
 
   const answeredCount = Object.keys(selectedOptions).length;
@@ -26,9 +24,7 @@ const PublicPollPage = () => {
   const progressPercentage =
     totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
-  // =========================
-  // HANDLE OPTION SELECT
-  // =========================
+
   const handleVote = (questionId, optionId) => {
     if (submitted || isExpired) return;
 
@@ -38,9 +34,6 @@ const PublicPollPage = () => {
     }));
   };
 
-  // =========================
-  // FETCH POLL
-  // =========================
   useEffect(() => {
     const fetchPublicPoll = async () => {
       try {
@@ -59,9 +52,7 @@ const PublicPollPage = () => {
     fetchPublicPoll();
   }, [pollId]);
 
-  // =========================
-  // SUBMIT POLL
-  // =========================
+
   const handleSubmit = async () => {
     if (submitting || isExpired) return;
 
@@ -90,9 +81,6 @@ const PublicPollPage = () => {
     }
   };
 
-  // =========================
-  // LOADING / EMPTY STATES
-  // =========================
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-400">

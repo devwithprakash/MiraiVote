@@ -7,7 +7,7 @@ export const authService = {
       email,
       password,
     });
-    console.log(data);
+
     return data;
   },
 
@@ -20,7 +20,7 @@ export const authService = {
       },
       { withCredentials: true },
     );
-    console.log(data);
+  
     return data;
   },
 
@@ -45,7 +45,6 @@ export const authService = {
       {},
       { withCredentials: true },
     );
-    console.log(data);
     return data;
   },
   async forgotPassword(email) {
@@ -64,7 +63,6 @@ export const authService = {
   async refresh() {
     const { data } = await api.get("/users/refresh", { withCredentials: true });
 
-    console.log(data);
     return data;
   },
 };

@@ -48,9 +48,7 @@ const Analytics = () => {
   // analytics response
   const [analytics, setAnalytics] = useState(null);
 
-  // =========================
-  // FETCH ALL POLLS
-  // =========================
+
 
   useEffect(() => {
     const fetchPolls = async () => {
@@ -68,9 +66,6 @@ const Analytics = () => {
     }
   }, [accessToken]);
 
-  // =========================
-  // FETCH ANALYTICS
-  // =========================
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -79,8 +74,6 @@ const Analytics = () => {
           accessToken,
           selectedPoll,
         );
-
-        console.log("ANALYTICS:", response.data);
 
         setAnalytics(response.data);
       } catch (error) {
@@ -95,9 +88,6 @@ const Analytics = () => {
     }
   }, [selectedPoll, accessToken]);
 
-  // =========================
-  // CHART DATA
-  // =========================
 
   const pieData = [
     {

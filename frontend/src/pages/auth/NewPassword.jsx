@@ -21,7 +21,6 @@ const NewPasswordPage = () => {
 
       const data = await authService.resetPassword(token, password);
 
-      console.log(data);
       toast.success("Password changed successfully");
       navigate("/login");
     } catch (error) {

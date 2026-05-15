@@ -13,7 +13,7 @@ export const pollService = {
       },
       { headers: { Authorization: `Bearer ${token}` }, withCredentials: true },
     );
-    console.log(data);
+
     return data;
   },
 
@@ -30,7 +30,7 @@ export const pollService = {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    return data
+    return data;
   },
 
   async fetchPoll(id, token) {
@@ -39,7 +39,6 @@ export const pollService = {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log(data);
     return data;
   },
   async fetchPublicPoll(id, token) {
@@ -48,7 +47,6 @@ export const pollService = {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log(data);
     return data;
   },
 
@@ -62,14 +60,22 @@ export const pollService = {
       { headers: { Authorization: `Bearer ${token}` } },
     );
 
-    console.log(data);
     return data;
   },
 
   async pollResult() {
     const { data } = await api.get(`/poll/${token}/result`);
 
-    console.log(data);
+    return data;
+  },
+
+  async deletePoll(pollId, token) {
+    console.log(pollId);
+    const { data } = api.delete(`/polls/${pollId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
+    });
+
     return data;
   },
 };

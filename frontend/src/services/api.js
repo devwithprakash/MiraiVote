@@ -9,34 +9,3 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-// api.interceptors.request.use(
-//   (config) => {
-//     const token = tokenStore.getAccess();
-
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-
-//     return config;
-//   },
-
-//   (error) => {
-//     return Promise.reject(error);
-//   },
-// );
-
-// api.interceptors.response.use(
-//   (response) => response,
-
-//   async (error) => {
-//     if (error.response?.status === 401) {
-//       // token expired
-//       // logout user
-//       // redirect login
-//       // refresh token
-//     }
-
-//     return Promise.reject(error);
-//   },
-// );

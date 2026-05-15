@@ -14,5 +14,6 @@ router.get("/:id", authMiddleware, controller.fetchPoll);
 router.get("/public/:id", authOptional, controller.fetchPoll);
 router.post("/:id/submit", authOptional, controller.submitPoll);
 router.get("/:token/result", authOptional, controller.pollResult);
+router.delete("/:id", authMiddleware, controller.deletePoll);
 
 export default router;

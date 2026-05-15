@@ -57,7 +57,7 @@ const PollDetail = () => {
     const fetchPoll = async () => {
       try {
         const response = await pollService.fetchPoll(id, accessToken);
-        console.log(response);
+  
         setPOll(response.data);
       } catch (error) {
         console.log(error);

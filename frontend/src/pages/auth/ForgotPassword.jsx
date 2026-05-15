@@ -18,7 +18,7 @@ export const ForgotPassword = () => {
       const data = await authService.forgotPassword(email);
 
       navigate("/forgot-password-notice");
-      console.log(data);
+
     } catch (error) {
       console.log(error);
     } finally {

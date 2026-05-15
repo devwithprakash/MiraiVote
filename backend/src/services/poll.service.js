@@ -79,17 +79,9 @@ const fetchAllPolls = async (userId) => {
 };
 
 const fetchAnalytics = async (userId, pollId) => {
-  // =========================================
-  // FETCH USER POLLS
-  // =========================================
-
   const userPolls = await Poll.find({
     creatorId: userId,
   }).lean();
-
-  // =========================================
-  // FILTER POLLS
-  // =========================================
 
   const filteredPolls =
     pollId && pollId !== "all"
@@ -98,7 +90,6 @@ const fetchAnalytics = async (userId, pollId) => {
 
   const pollIds = filteredPolls.map((poll) => poll._id);
 
-  // if no polls
   if (!pollIds.length) {
     return {
       selectedPoll: pollId || "all",
@@ -118,10 +109,6 @@ const fetchAnalytics = async (userId, pollId) => {
     };
   }
 
-  // =========================================
-  // GLOBAL COUNTS
-  // =========================================
-
   const [totalVotes, totalParticipants, totalQuestions] = await Promise.all([
     Answer.countDocuments({
       pollId: { $in: pollIds },
@@ -136,17 +123,9 @@ const fetchAnalytics = async (userId, pollId) => {
     }),
   ]);
 
-  // =========================================
-  // ACTIVE POLLS
-  // =========================================
-
   const activePolls = filteredPolls.filter(
     (poll) => !poll.expireAt || new Date(poll.expireAt) > new Date(),
   ).length;
-
-  // =========================================
-  // PER POLL STATS
-  // =========================================
 
   const pollsWithStats = await Promise.all(
     filteredPolls.map(async (poll) => {
@@ -180,19 +159,11 @@ const fetchAnalytics = async (userId, pollId) => {
     }),
   );
 
-  // =========================================
-  // TIMELINE DATA
-  // =========================================
-
   const timelineData = pollsWithStats.map((poll, index) => ({
     name: `Poll ${index + 1}`,
 
     votes: poll.votes,
   }));
-
-  // =========================================
-  // ENGAGEMENT DATA
-  // =========================================
 
   const engagementData = pollsWithStats.map((poll) => ({
     name: poll.title.length > 12 ? poll.title.slice(0, 12) + "..." : poll.title,
@@ -202,15 +173,7 @@ const fetchAnalytics = async (userId, pollId) => {
     participants: poll.people,
   }));
 
-  // =========================================
-  // TOP POLL
-  // =========================================
-
   const topPoll = pollsWithStats.sort((a, b) => b.votes - a.votes)[0] || null;
-
-  // =========================================
-  // RESPONSE
-  // =========================================
 
   return {
     selectedPoll: pollId || "all",
@@ -244,33 +207,22 @@ const fetchPoll = async (pollId) => {
     throw ApiError.notfound("Poll not found");
   }
 
-  // =========================
-  // EXPIRE CHECK
-  // =========================
   const isExpired = poll.expireAt && new Date() > new Date(poll.expireAt);
 
-  // =========================
-  // QUESTIONS
-  // =========================
   const questions = await Question.find({
     pollId: poll._id,
   });
 
-  // =========================
-  // BUILD QUESTIONS
-  // =========================
   const questionsWithOptions = await Promise.all(
     questions.map(async (question) => {
       const options = await Option.find({
         questionId: question._id,
       });
 
-      // total votes per question
       const totalVotes = await Answer.countDocuments({
         questionId: question._id,
       });
 
-      // build options (HIDDEN unless expired)
       const optionsMapped = await Promise.all(
         options.map(async (option) => {
           const votes = await Answer.countDocuments({
@@ -280,7 +232,6 @@ const fetchPoll = async (pollId) => {
           return {
             ...option.toObject(),
 
-            // 🔥 IMPORTANT: hide results until expiry
             ...(isExpired && {
               votes,
               percentage:
@@ -295,7 +246,6 @@ const fetchPoll = async (pollId) => {
 
         options: optionsMapped,
 
-        // 🔥 hide totalVotes until expiry
         ...(isExpired && {
           totalVotes,
         }),
@@ -303,9 +253,6 @@ const fetchPoll = async (pollId) => {
     }),
   );
 
-  // =========================
-  // STATS
-  // =========================
   const people = await Participant.countDocuments({
     pollId: poll._id,
   });
@@ -314,15 +261,11 @@ const fetchPoll = async (pollId) => {
     pollId: poll._id,
   });
 
-  // =========================
-  // RESPONSE
-  // =========================
   return {
     ...poll.toObject(),
 
     isExpired,
 
-    // 🔥 SAFE QUESTIONS (no leakage before expiry)
     questions: questionsWithOptions,
 
     people,
@@ -336,29 +279,24 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
   try {
     session.startTransaction();
 
-    // find poll
     const poll = await Poll.findById(pollId).session(session);
 
     if (!poll) {
       throw ApiError.notfound("Poll not found");
     }
 
-    // poll expired
     if (poll.expireAt && new Date() > poll.expireAt) {
       throw ApiError.badRequest("Poll has expired");
     }
 
-    // auth poll requires login
     if (poll.mode === "auth" && !userId) {
       throw ApiError.unauthorized("First login to submit poll");
     }
 
-    // anonymous poll requires anonymous id
     if (poll.mode === "anonymous" && !anonymousId) {
       throw ApiError.badRequest("Anonymous ID is required");
     }
 
-    // prevent duplicate submission (auth)
     if (poll.mode === "auth") {
       const alreadySubmitted = await Participant.findOne({
         pollId: poll._id,
@@ -370,7 +308,6 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
       }
     }
 
-    // prevent duplicate submission (anonymous)
     if (poll.mode === "anonymous") {
       const alreadySubmitted = await Participant.findOne({
         pollId: poll._id,
@@ -429,7 +366,6 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
       }
     }
 
-    // create participant
     const [participant] = await Participant.create(
       [
         {
@@ -454,14 +390,8 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
       session,
     });
 
-    // commit transaction
     await session.commitTransaction();
 
-    // =========================
-    // SOCKET LIVE UPDATE
-    // =========================
-
-    // total participants
     const people = await Participant.countDocuments({
       pollId: poll._id,
     });
@@ -471,24 +401,16 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
       pollId: poll._id,
     });
 
-    // votes per question
-    // =========================
-    // LIVE QUESTION + OPTION RESULTS
-    // =========================
-
     const questionVotes = await Promise.all(
       questions.map(async (question) => {
-        // total votes for question
         const totalVotes = await Answer.countDocuments({
           questionId: question._id,
         });
 
-        // all options of this question
         const questionOptions = await Option.find({
           questionId: question._id,
         });
 
-        // option vote stats
         const optionResults = await Promise.all(
           questionOptions.map(async (option) => {
             const optionVotes = await Answer.countDocuments({
@@ -519,10 +441,6 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
         };
       }),
     );
-
-    // =========================
-    // EMIT LIVE UPDATE
-    // =========================
 
     io.to(`poll:${poll._id}`).emit("poll_updated", {
       people,
@@ -618,6 +536,35 @@ const pollResult = async (shareToken, userId) => {
   };
 };
 
+const deletePoll = async (pollId) => {
+  const poll = await Poll.findById(pollId);
+
+  if (!poll) {
+    throw ApiError.notfound("Poll not found");
+  }
+
+  const questions = await Question.find({ pollId: poll._id });
+  const questionIds = questions.map((q) => q._id);
+
+  await Answer.deleteMany({
+    questionId: { $in: questionIds },
+  });
+
+  await Option.deleteMany({
+    questionId: { $in: questionIds },
+  });
+
+  await Question.deleteMany({
+    pollId: poll._id,
+  });
+
+  await Participant.deleteMany({
+    pollId: poll._id,
+  });
+
+  await Poll.findByIdAndDelete(pollId);
+};
+
 export {
   createPoll,
   fetchPoll,
@@ -625,4 +572,5 @@ export {
   pollResult,
   fetchAllPolls,
   fetchAnalytics,
+  deletePoll,
 };
