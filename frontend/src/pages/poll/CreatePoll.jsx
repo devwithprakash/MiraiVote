@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ArrowLeft, ChevronDown, Plus, Trash2 } from "lucide-react";
 import { pollService } from "../../services/poll.service";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 const InputWrapper = ({ label, children, optional = false }) => (
@@ -128,7 +128,8 @@ const CreatePoll = () => {
     <div className="w-full min-h-screen bg-[#020617] text-slate-200 pb-20">
       <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-4 pt-8">
         <div className="mb-10">
-          <button
+          <Link
+          to="/dashboard"
             type="button"
             className="group flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-8 transition-colors"
           >
@@ -137,7 +138,7 @@ const CreatePoll = () => {
               className="group-hover:-translate-x-1 transition-transform"
             />
             Back
-          </button>
+          </Link>
           <h1 className="text-4xl font-bold text-white tracking-tight">
             Create a poll
           </h1>

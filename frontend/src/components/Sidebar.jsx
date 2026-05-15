@@ -1,26 +1,29 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom"; //
+import { Link, NavLink, useLocation } from "react-router-dom"; //
 import { BarChart3, LayoutDashboard, Plus, LogOut, Icon } from "lucide-react";
 import { authService } from "../services/auth.service";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 // Updated Item to use Link and detect active route
-const SidebarItem = ({ icon: Icon, label, to, active }) => (
-  <Link
-    to={to}
-    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-      active
-        ? "bg-slate-800 text-white"
-        : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
-    }`}
-  >
-    <Icon size={18} />
-    <span className="text-sm font-medium">{label}</span>
-  </Link>
-);
+// Inside SidebarItem component
+const SidebarItem = ({ icon: Icon, label, to, onClick }) => {
+  return (
+    <NavLink
+      to={to}
+      onClick={onClick} // This triggers the setIsSidebarOpen(false) in Layout
+      className={({ isActive }) => `
+        flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+        ${isActive ? "bg-slate-800 text-white" : "text-slate-400 hover:bg-slate-900"}
+      `}
+    >
+      <Icon size={18} />
+      <span className="text-sm font-medium">{label}</span>
+    </NavLink>
+  );
+};
 
-const Sidebar = () => {
+const Sidebar = ({ onItemClick }) => {
   const location = useLocation();
 
   const { accessToken, setAccessToken } = useAuth();
@@ -31,7 +34,7 @@ const Sidebar = () => {
 
       setAccessToken(null);
 
-      toast.success("User logged out successfully")
+      toast.success("User logged out successfully");
       console.log(data);
     } catch (error) {
       console.log(error);
@@ -46,7 +49,7 @@ const Sidebar = () => {
           <BarChart3 className="text-black" size={20} />
         </div>
         <span className="font-bold text-lg tracking-tight text-white">
-          PulseBoard
+          MiraiVote
         </span>
       </div>
 
@@ -60,6 +63,7 @@ const Sidebar = () => {
           icon={LayoutDashboard}
           label="Dashboard"
           to="/dashboard"
+          onClick={onItemClick}
           active={location.pathname === "/dashboard"}
         />
 
@@ -67,6 +71,7 @@ const Sidebar = () => {
           icon={BarChart3}
           label="Analytics"
           to="/analytics"
+          onClick={onItemClick}
           active={location.pathname === "/analytics"}
         />
 
@@ -74,21 +79,12 @@ const Sidebar = () => {
           icon={Plus}
           label="New poll"
           to="/create"
+          onClick={onItemClick}
           active={location.pathname === "/create"}
         />
       </div>
 
-      {/* Footer Area - Always fixed at the bottom of the sidebar */}
       <div className="mt-auto pt-4 border-t border-slate-800 shrink-0">
-        <div className="flex items-center gap-3 px-3 py-4">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
-            K
-          </div>
-          <span className="text-xs text-slate-400 truncate">
-            kanekiken8333@gmail.com
-          </span>
-        </div>
-
         <button
           onClick={handleLogout}
           className={`flex text-slate-400 cursor-pointer hover:text-slate-300 items-center gap-3 px-3 py-2 rounded-lg transition-colors`}

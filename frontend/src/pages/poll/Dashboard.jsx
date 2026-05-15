@@ -16,15 +16,17 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const PollCard = ({ title, description, votes, people, type, id }) => {
+  const navigate = useNavigate();
 
-  const navigate  = useNavigate()
-
-  const handleNavigate = ()=>{
-    navigate(`/poll/${id}`)
-  }
+  const handleNavigate = () => {
+    navigate(`/poll/${id}`);
+  };
 
   return (
-    <div onClick={handleNavigate}  className="group bg-[#0B1120] border border-slate-800 rounded-3xl p-6 hover:border-slate-700 hover:bg-[#0d1426] transition-all duration-300 hover:-translate-y-1">
+    <div
+      onClick={handleNavigate}
+      className="group bg-[#0B1120] border border-slate-800 rounded-3xl p-6 hover:border-slate-700 hover:bg-[#0d1426] transition-all duration-300 hover:-translate-y-1"
+    >
       {/* Top */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -63,19 +65,42 @@ const PollCard = ({ title, description, votes, people, type, id }) => {
   );
 };
 
+const PollCardSkeleton = () => {
+  return (
+    <div className="bg-[#0B1120] border border-slate-800 rounded-3xl p-6 space-y-4 animate-pulse">
+      <div className="flex justify-between items-start">
+        <div className="h-6 w-3/4 bg-slate-800 rounded-lg"></div>
+        <div className="h-5 w-12 bg-slate-800 rounded-md"></div>
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-full bg-slate-800/50 rounded"></div>
+        <div className="h-4 w-2/3 bg-slate-800/50 rounded"></div>
+      </div>
+      <div className="flex gap-4 pt-2">
+        <div className="h-4 w-16 bg-slate-800 rounded"></div>
+        <div className="h-4 w-16 bg-slate-800 rounded"></div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [polls, setPolls] = useState([]);
+  const [loading, setLoading] = useState(false);
   const { accessToken } = useAuth();
 
   useEffect(() => {
     const fetchPolls = async () => {
       try {
+        setLoading(true);
         const response = await pollService.fetchAllPolls(accessToken);
 
         console.log(response);
         setPolls(response.data);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -90,13 +115,15 @@ const Dashboard = () => {
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
             Your polls
           </h1>
-
           <p className="text-slate-400 mt-2 text-sm sm:text-base">
             Create, share, and analyze live polls.
           </p>
         </div>
 
-        <Link to="/create" className="h-12 px-5 rounded-2xl bg-slate-100 hover:bg-white text-slate-900 font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:scale-[1.02] active:scale-[0.98]">
+        <Link
+          to="/create"
+          className="h-12 px-5 rounded-2xl bg-slate-100 hover:bg-white text-slate-900 font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+        >
           <Plus size={18} />
           <span>New poll</span>
         </Link>
@@ -104,18 +131,23 @@ const Dashboard = () => {
 
       {/* Polls Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {polls &&
-          polls.map((poll) => (
-            <PollCard
-              key={poll._id}
-              title={poll.title}
-              description={poll.description}
-              votes={poll.votes}
-              people={poll.people}
-              type={poll.mode}
-              id={poll._id}
-            />
-          ))}
+        {loading
+          ? // Skeleton State
+            Array.from({ length: 6 }).map((_, i) => (
+              <PollCardSkeleton/>
+            ))
+          : // Actual Content
+            polls?.map((poll) => (
+              <PollCard
+                key={poll._id}
+                title={poll.title}
+                description={poll.description}
+                votes={poll.votes}
+                people={poll.people}
+                type={poll.mode}
+                id={poll._id}
+              />
+            ))}
       </div>
     </div>
   );

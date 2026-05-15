@@ -261,21 +261,6 @@ const PollDetail = () => {
               ))}
           </section>
 
-          {/* Participants Section */}
-          <section className="space-y-6">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
-                Participants
-              </h2>
-              <p className="text-slate-500 text-sm">
-                Everyone who joined this poll.
-              </p>
-            </div>
-
-            <div className="bg-[#0f172a]/30 border border-slate-800 rounded-2xl p-6 sm:p-10 lg:p-12 text-center">
-              <p className="text-slate-500">No participants yet.</p>
-            </div>
-          </section>
         </div>
       </main>
     </div>

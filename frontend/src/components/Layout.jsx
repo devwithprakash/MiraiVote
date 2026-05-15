@@ -14,19 +14,17 @@ export const Layout = () => {
       <div className="hidden lg:block">
         <Sidebar />
       </div>
-
       {/* Mobile Sidebar */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsSidebarOpen(false)}
           />
 
-          {/* Sidebar */}
           <div className="relative z-50 w-[280px] h-full">
-            <Sidebar />
+            {/* Pass the close function here */}
+            <Sidebar onItemClick={() => setIsSidebarOpen(false)} />
 
             <button
               onClick={() => setIsSidebarOpen(false)}
@@ -37,7 +35,6 @@ export const Layout = () => {
           </div>
         </div>
       )}
-
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Navbar */}
@@ -52,7 +49,7 @@ export const Layout = () => {
             </button>
 
             <span className="text-sm font-medium text-slate-400">
-              PulseBoard
+              MiraiVote
             </span>
           </div>
         </header>
