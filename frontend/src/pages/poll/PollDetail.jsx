@@ -131,7 +131,7 @@ const PollDetail = () => {
     };
   }, []);
 
-  const pollUrl = `http://localhost:5173/public/${poll?._id}`;
+  const pollUrl = `${import.meta.env.VITE_API_URL}/public/${poll?._id}`;
 
   return (
     <div className="flex min-h-screen bg-[#020617] text-slate-200 font-sans">
