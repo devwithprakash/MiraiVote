@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 const PollCard = ({ title, description, votes, people, type, id }) => {
   const navigate = useNavigate();
 
-  const {accessToken} = useAuth()
+  const { accessToken } = useAuth();
 
   const handleNavigate = () => {
     navigate(`/poll/${id}`);
@@ -156,7 +156,9 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {loading
           ? // Skeleton State
-            Array.from({ length: 6 }).map((_, i) => <PollCardSkeleton />)
+            Array.from({ length: 6 }).map((_, i) => (
+              <PollCardSkeleton key={i} />
+            ))
           : // Actual Content
             polls?.map((poll) => (
               <PollCard
