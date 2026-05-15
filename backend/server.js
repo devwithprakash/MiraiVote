@@ -13,7 +13,7 @@ const server = http.createServer(app);
 // socket io
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["https://miraivote.vercel.app", "http://localhost:5173"],
     credentials: true,
   },
 });
