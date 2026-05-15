@@ -30,7 +30,7 @@ const NAV = () => (
         </svg>
       </div>
       <span className="font-bold text-white text-lg tracking-tight">
-        PulseBoard
+        MiraiVote
       </span>
     </div>
     <div className="flex items-center gap-4">
