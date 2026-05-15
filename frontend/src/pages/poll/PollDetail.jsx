@@ -57,41 +57,46 @@ const PollDetail = () => {
     const fetchPoll = async () => {
       try {
         const response = await pollService.fetchPoll(id, accessToken);
-
         console.log(response);
         setPOll(response.data);
       } catch (error) {
         console.log(error);
       }
     };
-    fetchPoll();
-  }, []);
+
+    if (id && accessToken) {
+      fetchPoll();
+    }
+  }, [id, accessToken]);
 
   useEffect(() => {
     if (!id) return;
 
-    socket.emit("join_poll", id);
+    const onConnect = () => {
+      socket.emit("join_poll", id);
+      console.log("Joined poll room:", id);
+    };
 
-    console.log("Creator joined poll room:", id);
+    socket.on("connect", onConnect);
+
+    if (socket.connected) {
+      socket.emit("join_poll", id);
+    }
+
+    return () => {
+      socket.off("connect", onConnect);
+    };
   }, [id]);
 
   useEffect(() => {
     const handlePollUpdate = (data) => {
-      console.log("Creator live update:", data);
-
       setPOll((prev) => {
         if (!prev) return prev;
 
         return {
           ...prev,
-
-          // total poll votes
           votes: data.votes,
-
-          // total participants
           people: data.people,
-
-          // update questions
           questions: prev.questions.map((question) => {
             const updatedQuestion = data.questionVotes.find(
               (q) => q.questionId === question._id,
@@ -101,10 +106,7 @@ const PollDetail = () => {
 
             return {
               ...question,
-
               totalVotes: updatedQuestion.totalVotes,
-
-              // update option votes
               options: question.options.map((option) => {
                 const updatedOption = updatedQuestion.options.find(
                   (o) => o.optionId === option._id,

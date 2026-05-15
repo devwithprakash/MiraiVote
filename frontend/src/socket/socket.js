@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
-export const socket = io("https://pulse-board-7htj.onrender.com/api", {
-  transports: ["websocket"],
+export const socket = io("https://pulse-board-7htj.onrender.com", {
+  withCredentials: true,
 });
 
 socket.on("connect", () => {

@@ -16,6 +16,7 @@ export const io = new Server(server, {
     origin: ["https://miraivote.vercel.app", "http://localhost:5173"],
     credentials: true,
   },
+  path: "/socket.io",
 });
 
 // socket connection
