@@ -3,6 +3,7 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import { AuthLayout } from "../../components/auth/AuthLayout";
 import { authService } from "../../services/auth.service";
 import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const NewPasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -21,6 +22,7 @@ const NewPasswordPage = () => {
       const data = await authService.resetPassword(token, password);
 
       console.log(data);
+      toast.success("Password changed successfully");
       navigate("/login");
     } catch (error) {
       console.log(error);
@@ -34,7 +36,7 @@ const NewPasswordPage = () => {
       title="Set new password"
       subtitle="Must be at least 8 characters long with a mix of letters and numbers."
     >
-      <form onSubmit={(e)=> handleSubmit(e)} className="space-y-5">
+      <form onSubmit={(e) => handleSubmit(e)} className="space-y-5">
         {/* New Password Field */}
         <div className="space-y-2">
           <label className="text-sm font-bold text-slate-300 ml-1">

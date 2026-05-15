@@ -11,8 +11,14 @@ import {
   Plus,
   LogOut,
   PanelLeftClose,
+  Check,
 } from "lucide-react";
-
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { pollService } from "../../services/poll.service.js";
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { socket } from "../../socket/socket.js";
 
 const MiniStat = ({ icon: Icon, label, value }) => (
   <div className="bg-[#0f172a]/40 border border-slate-800 rounded-2xl p-5 flex-1">
@@ -27,8 +33,105 @@ const MiniStat = ({ icon: Icon, label, value }) => (
 );
 
 const PollDetail = () => {
-  const pollUrl =
-    "https://id-preview--ad17dac4-0446-4f60-95b5-d115b244d93f.lovable.app/p/f581942f87864a...";
+  const [poll, setPOll] = useState(null);
+  const { id } = useParams();
+  const { accessToken } = useAuth();
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(pollUrl);
+
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.log("Copy failed", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchPoll = async () => {
+      try {
+        const response = await pollService.fetchPoll(id, accessToken);
+
+        console.log(response);
+        setPOll(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchPoll();
+  }, []);
+
+  useEffect(() => {
+    if (!id) return;
+
+    socket.emit("join_poll", id);
+
+    console.log("Creator joined poll room:", id);
+  }, [id]);
+
+  useEffect(() => {
+    const handlePollUpdate = (data) => {
+      console.log("Creator live update:", data);
+
+      setPOll((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+
+          // total poll votes
+          votes: data.votes,
+
+          // total participants
+          people: data.people,
+
+          // update questions
+          questions: prev.questions.map((question) => {
+            const updatedQuestion = data.questionVotes.find(
+              (q) => q.questionId === question._id,
+            );
+
+            if (!updatedQuestion) return question;
+
+            return {
+              ...question,
+
+              totalVotes: updatedQuestion.totalVotes,
+
+              // update option votes
+              options: question.options.map((option) => {
+                const updatedOption = updatedQuestion.options.find(
+                  (o) => o.optionId === option._id,
+                );
+
+                return updatedOption
+                  ? {
+                      ...option,
+                      votes: updatedOption.votes,
+                      percentage: updatedOption.percentage,
+                    }
+                  : option;
+              }),
+            };
+          }),
+        };
+      });
+    };
+
+    socket.on("poll_updated", handlePollUpdate);
+
+    return () => {
+      socket.off("poll_updated", handlePollUpdate);
+    };
+  }, []);
+
+  const pollUrl = `http://localhost:5173/public/${poll?._id}`;
 
   return (
     <div className="flex min-h-screen bg-[#020617] text-slate-200 font-sans">
@@ -45,15 +148,15 @@ const PollDetail = () => {
           <div className="flex justify-between items-start">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-bold text-white">fdfg</h1>
+                <h1 className="text-4xl font-bold text-white">{poll?.title}</h1>
                 <span className="bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                   Live
                 </span>
                 <span className="bg-slate-800 text-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-md border border-slate-700">
-                  Authenticated
+                  {poll?.mode}
                 </span>
               </div>
-              <p className="text-slate-400 text-lg">dfgdgfdg</p>
+              <p className="text-slate-400 text-lg">Description</p>
             </div>
             <button className="flex items-center gap-2 bg-[#020617] border border-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl transition-colors">
               <Power size={16} />
@@ -66,22 +169,35 @@ const PollDetail = () => {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
               Share Link
             </p>
+
             <div className="flex gap-2">
               <div className="flex-1 bg-[#020617] border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300 font-mono truncate">
                 {pollUrl}
               </div>
-              <button className="bg-slate-100 hover:bg-white text-black px-4 py-3 rounded-xl flex items-center gap-2 font-bold transition-colors">
-                <Copy size={16} />
-                Copy
+
+              <button
+                onClick={handleCopy}
+                className="bg-slate-100 cursor-pointer hover:bg-white text-black px-4 py-3 rounded-xl flex items-center gap-2 font-bold transition-colors"
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? "Copied" : "Copy"}
               </button>
             </div>
           </div>
 
           {/* Stats Grid */}
           <div className="flex gap-4">
-            <MiniStat icon={BarChart2} label="Total Votes" value="0" />
-            <MiniStat icon={Users} label="Participants" value="0" />
-            <MiniStat icon={ListTodo} label="Questions" value="1" />
+            <MiniStat
+              icon={BarChart2}
+              label="Total Votes"
+              value={poll?.votes}
+            />
+            <MiniStat icon={Users} label="Participants" value={poll?.people} />
+            <MiniStat
+              icon={ListTodo}
+              label="Questions"
+              value={poll?.questions?.length}
+            />
           </div>
 
           {/* Live Results Section */}
@@ -93,28 +209,43 @@ const PollDetail = () => {
               </p>
             </div>
 
-            <div className="bg-[#0f172a]/30 border border-slate-800 rounded-2xl p-8 space-y-8">
-              <div className="flex justify-between items-center">
-                <h3 className="text-white font-bold">
-                  <span className="text-slate-500">Q1.</span> dfgdgfdg
-                </h3>
-                <span className="text-slate-500 text-sm">0 responses</span>
-              </div>
-
-              <div className="space-y-6">
-                {["dfgdg", "dfgdfg", "dfgdfgdg"].map((option) => (
-                  <div key={option} className="space-y-2">
-                    <div className="flex justify-between text-sm text-slate-300">
-                      <span>{option}</span>
-                      <span>0 • 0%</span>
-                    </div>
-                    <div className="w-full bg-slate-800/50 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-blue-600 h-full w-0 transition-all duration-500"></div>
-                    </div>
+            {poll &&
+              poll.questions.map((p) => (
+                <div
+                  key={p._id}
+                  className="bg-[#0f172a]/30 border border-slate-800 rounded-2xl p-8 space-y-8"
+                >
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-white font-bold">
+                      <span className="text-slate-500">Q1.</span> {p.text}
+                    </h3>
+                    <span className="text-slate-500 text-sm">
+                      {p.totalVotes} responses
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
+
+                  <div className="space-y-6">
+                    {p.options.map((option) => (
+                      <div key={option._id} className="space-y-2">
+                        <div className="flex justify-between text-sm text-slate-300">
+                          <span>{option.text}</span>
+                          <span>
+                            {option.votes || 0} • {option.percentage || 0}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-800/50 h-1.5 rounded-full overflow-hidden">
+                          <div
+                            className="bg-blue-600 h-full transition-all duration-500"
+                            style={{
+                              width: `${option.percentage || 0}%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
           </section>
 
           {/* Participants Section */}

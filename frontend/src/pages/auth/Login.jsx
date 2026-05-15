@@ -4,6 +4,7 @@ import { AuthLayout } from "../../components/auth/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../../services/auth.service";
 import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -29,6 +30,7 @@ export const LoginPage = () => {
 
       setAccessToken(res.data.accessToken);
 
+      toast.success("User logged in successfully")
       navigate("/dashboard", { replace: true });
     } catch (error) {
       console.log(error);
@@ -57,7 +59,7 @@ export const LoginPage = () => {
         <div className="space-y-1">
           <div className="flex justify-between items-center px-1">
             <label className="text-sm font-bold text-slate-300">Password</label>
-            <Link to="/reset-password" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+            <Link to="/forgot-password" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
               Forgot password?
             </Link>
           </div>

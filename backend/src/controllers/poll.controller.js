@@ -2,22 +2,36 @@ import * as service from "../services/poll.service.js";
 import ApiResponse from "../utils/api-response.js";
 
 const createPoll = async (req, res) => {
+  console.log("Hello")
   const result = await service.createPoll(req.body, req.userId);
 
   ApiResponse.created(res, "Poll created successfully", result);
 };
 
 const fetchPoll = async (req, res) => {
-  const result = await service.fetchPoll(req.params.token);
+  const result = await service.fetchPoll(req.params.id);
 
   ApiResponse.ok(res, "Poll fetched successfully", result);
 };
 
+const fetchAnalytics = async(req, res)=>{
+  const result = await service.fetchAnalytics(req.userId, req.params.pollId)
+
+  ApiResponse.ok(res, "polls analytics", result)
+}
+
+const fetchAllPolls = async(req, res)=>{
+  const result = await service.fetchAllPolls(req.userId)
+
+  ApiResponse.ok(res, "All polls", result)
+}
+
 const submitPoll = async (req, res) => {
   const result = await service.submitPoll(
-    req.params.token,
+    req.params.id,
     req.userId,
     req.body.pollInfo,
+    req.body.anonymousId,
   );
 
   ApiResponse.ok(res, "Poll submitted successfully", result);
@@ -29,4 +43,4 @@ const pollResult = async (req, res) => {
   ApiResponse.ok(res, "Poll result", result);
 };
 
-export { createPoll, fetchPoll, submitPoll, pollResult };
+export { createPoll, fetchPoll, submitPoll, pollResult, fetchAllPolls, fetchAnalytics };

@@ -3,6 +3,7 @@ import { BarChart3, ArrowLeft } from "lucide-react";
 import { AuthLayout } from "../../components/auth/AuthLayout";
 import { authService } from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export const ForgotPassword = () => {
   const [email, setEmail] = useState("");

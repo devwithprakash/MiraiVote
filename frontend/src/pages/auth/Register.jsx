@@ -3,6 +3,7 @@ import { BarChart3, ArrowLeft } from "lucide-react";
 import { AuthLayout } from "../../components/auth/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../../services/auth.service.js";
+import toast from "react-hot-toast";
 
 export const RegisterPage = () => {
   const [name, setName] = useState("");
@@ -10,7 +11,7 @@ export const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const registerDetails = {
     name,
@@ -23,8 +24,8 @@ export const RegisterPage = () => {
     try {
       setLoading(true);
       const data = await authService.register(registerDetails);
-
-      navigate("/verify-notice")
+      toast.success("User logged in successfully");
+      navigate("/verify-notice");
       console.log(data);
     } catch (error) {
       console.log(error);

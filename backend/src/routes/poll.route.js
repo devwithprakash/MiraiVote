@@ -8,8 +8,11 @@ import { authOptional } from "../middleware/auth-optional.middleware.js";
 const router = Router();
 
 router.post("/", authMiddleware, validate(pollSchema), controller.createPoll);
-router.get("/:token", controller.fetchPoll);
-router.post("/:token/submit", authOptional, controller.submitPoll);
+router.get("/analytics/:pollId", authMiddleware, controller.fetchAnalytics);
+router.get("/", authMiddleware, controller.fetchAllPolls);
+router.get("/:id", authMiddleware, controller.fetchPoll);
+router.get("/public/:id", authOptional, controller.fetchPoll);
+router.post("/:id/submit", authOptional, controller.submitPoll);
 router.get("/:token/result", authOptional, controller.pollResult);
 
 export default router;

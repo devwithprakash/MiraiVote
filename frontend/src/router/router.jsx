@@ -18,6 +18,7 @@ import {
 } from "../pages/auth/ForgotPassword";
 import NewPasswordPage from "../pages/auth/NewPassword";
 import ForgotPasswordNotice from "../pages/auth/ForgotPasswordNotice";
+import PublicPollPage from "../pages/poll/PublicPollPage";
 
 const ProtectedLayout = () => (
   <ProtectedRoute>
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
   {
     path: "/reset-password/:token",
     element: <NewPasswordPage />,
+  },
+  {
+    path: "/public/:pollId",
+    element: <PublicPollPage />,
   },
 
   // protected routes

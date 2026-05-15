@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom"; //
 import { BarChart3, LayoutDashboard, Plus, LogOut, Icon } from "lucide-react";
 import { authService } from "../services/auth.service";
 import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 // Updated Item to use Link and detect active route
 const SidebarItem = ({ icon: Icon, label, to, active }) => (
@@ -30,6 +31,7 @@ const Sidebar = () => {
 
       setAccessToken(null);
 
+      toast.success("User logged out successfully")
       console.log(data);
     } catch (error) {
       console.log(error);

@@ -11,8 +11,6 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const result = await service.login(req.body);
 
-  console.log(result);
-
   res.cookie("refreshToken", result.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

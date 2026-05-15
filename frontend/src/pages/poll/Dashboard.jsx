@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   LayoutDashboard,
   BarChart3,
@@ -10,11 +10,21 @@ import {
   PanelLeftClose,
   Vote,
 } from "lucide-react";
+import { pollService } from "../../services/poll.service.js";
+import { useAuth } from "../../context/AuthContext";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
+const PollCard = ({ title, description, votes, people, type, id }) => {
 
-const PollCard = ({ title, description, votes, people, type }) => {
+  const navigate  = useNavigate()
+
+  const handleNavigate = ()=>{
+    navigate(`/poll/${id}`)
+  }
+
   return (
-    <div className="group bg-[#0B1120] border border-slate-800 rounded-3xl p-6 hover:border-slate-700 hover:bg-[#0d1426] transition-all duration-300 hover:-translate-y-1">
+    <div onClick={handleNavigate}  className="group bg-[#0B1120] border border-slate-800 rounded-3xl p-6 hover:border-slate-700 hover:bg-[#0d1426] transition-all duration-300 hover:-translate-y-1">
       {/* Top */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -54,10 +64,26 @@ const PollCard = ({ title, description, votes, people, type }) => {
 };
 
 const Dashboard = () => {
-    console.log("Hello")
+  const [polls, setPolls] = useState([]);
+  const { accessToken } = useAuth();
+
+  useEffect(() => {
+    const fetchPolls = async () => {
+      try {
+        const response = await pollService.fetchAllPolls(accessToken);
+
+        console.log(response);
+        setPolls(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchPolls();
+  }, []);
+
   return (
     <div className="w-full">
-
       {/* Header */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-10">
         <div>
@@ -70,23 +96,26 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <button className="h-12 px-5 rounded-2xl bg-slate-100 hover:bg-white text-slate-900 font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:scale-[1.02] active:scale-[0.98]">
+        <Link to="/create" className="h-12 px-5 rounded-2xl bg-slate-100 hover:bg-white text-slate-900 font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:scale-[1.02] active:scale-[0.98]">
           <Plus size={18} />
           <span>New poll</span>
-        </button>
+        </Link>
       </div>
 
       {/* Polls Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <PollCard title="hello" votes={0} people={0} type="Anonymous" />
-
-        <PollCard
-          title="fdfg"
-          description="dfgdgfdg"
-          votes={0}
-          people={0}
-          type="Authenticated"
-        />
+        {polls &&
+          polls.map((poll) => (
+            <PollCard
+              key={poll._id}
+              title={poll.title}
+              description={poll.description}
+              votes={poll.votes}
+              people={poll.people}
+              type={poll.mode}
+              id={poll._id}
+            />
+          ))}
       </div>
     </div>
   );

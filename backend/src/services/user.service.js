@@ -88,26 +88,24 @@ const logout = async (userId) => {
 const verifyEmail = async (token) => {
   const hashedToken = hashToken(token);
 
+  
   const user = await User.findOne({
     verificationToken: hashedToken,
   }).select("+isVerified +verificationToken +verificationTokenExpires");
-
+  
   if (!user) {
     throw ApiError.notfound("User no longer exist");
   }
-
+  
   if (Date.now() > user.verificationTokenExpires) {
     throw ApiError.badRequest("Verification token has expired");
   }
-
+  
   const accessToken = generateAccessToken({ id: user._id });
   const refreshToken = generateRefreshToken({ id: user._id });
-
-  const hashedRefreshToken = hashToken(refreshToken);
-
-  console.log("hashedRefreshToken", hashedRefreshToken);
-
-  user.refreshToken = hashedRefreshToken;
+  
+  console.log("inside service")
+  user.refreshToken = hashToken(refreshToken);
 
   user.isVerified = true;
   user.verificationToken = undefined;
@@ -125,7 +123,6 @@ const verifyEmail = async (token) => {
 
 const forgotPassword = async (email) => {
   const user = await User.findOne({ email });
-
 
   if (!user) {
     throw ApiError.notfound("User not found");
