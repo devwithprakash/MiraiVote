@@ -1,0 +1,110 @@
+html {
+  scroll-behavior: smooth;
+}
+.hero-glow {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    rgba(139, 92, 246, 0.25) 0%,
+    transparent 70%
+  );
+}
+.gradient-text {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.float {
+  animation: float 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.fade-up-1 {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fade-up-2 {
+  animation: fadeUp 0.8s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fade-up-3 {
+  animation: fadeUp 0.8s 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.fade-up-4 {
+  animation: fadeUp 0.8s 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+}
+.feature-grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 65% 100% at 50% 30%,
+    #000 40%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 65% 100% at 50% 30%,
+    #000 40%,
+    transparent 100%
+  );
+}
+.feature-card {
+  position: relative;
+  isolation: isolate;
+}
+.feature-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+.feature-card:hover::before {
+  opacity: 0.9;
+}
+@media (prefers-reduced-motion: reduce) {
+  .float,
+  .fade-up-1,
+  .fade-up-2,
+  .fade-up-3,
+  .fade-up-4 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
