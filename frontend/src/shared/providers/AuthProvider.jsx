@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
         const token = await getToken();
 
         const res = await api.post(
-          "/users/sync",
+          "/user/sync",
           {},
           {
             headers: {

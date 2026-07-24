@@ -25,8 +25,8 @@ app.get("/health", (req, res) => {
   res.json({ healthy: true });
 });
 
-app.use("/api/users",requireAuth(), userRoute);
-app.use("/api/polls", pollRoute);
+app.use("/api/user",requireAuth(), userRoute);
+app.use("/api/poll", pollRoute);
 
 app.use(errorHandler);
 

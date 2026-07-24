@@ -4,7 +4,7 @@ import { api } from "../../../shared/lib/api.js";
 export const pollService = {
   async createPoll({ title, mode, expireAt, questions }) {
     const { data } = await api.post(
-      "/polls",
+      "/poll",
       {
         title,
         mode,
@@ -18,26 +18,26 @@ export const pollService = {
   },
 
   async fetchAllPolls() {
-    const { data } = await api.get("/polls");
+    const { data } = await api.get("/poll");
 
     return data;
   },
 
   async fetchAnalytics(pollId) {
-    const { data } = await api.get(`/polls/analytics/${pollId}`);
+    const { data } = await api.get(`/poll/analytics/${pollId}`);
 
     return data;
   },
 
   async fetchPoll(id) {
-    const { data } = await api.get(`/polls/${id}`, {
+    const { data } = await api.get(`/poll/${id}`, {
       withCredentials: true,
     });
 
     return data;
   },
   async fetchPublicPoll(id) {
-    const { data } = await api.get(`/polls/public/${id}`, {
+    const { data } = await api.get(`/poll/public/${id}`, {
       withCredentials: true,
     });
 
@@ -45,7 +45,7 @@ export const pollService = {
   },
 
   async submitPoll(id, pollInfo) {
-    const { data } = await api.post(`/polls/${id}/submit`, {
+    const { data } = await api.post(`/poll/${id}/submit`, {
       pollInfo,
       anonymousId: getAnonymousId(),
     });
@@ -60,7 +60,7 @@ export const pollService = {
   },
 
   async deletePoll(pollId) {
-    const { data } = await api.delete(`/polls/${pollId}`, {
+    const { data } = await api.delete(`/poll/${pollId}`, {
       withCredentials: true,
     });
 
