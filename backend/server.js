@@ -1,12 +1,13 @@
 import http from "http";
 import dns from "dns";
 import { Server } from "socket.io";
-
-dns.setServers(["1.1.1.1", "8.8.8.8"]);
-
 import "dotenv/config";
 import app from "./src/app.js";
 import { connectDB } from "./src/config/db.js";
+
+console.log(process.env.CLERK_SECRET_KEY);
+
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const server = http.createServer(app);
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ListChecks,
@@ -87,9 +87,8 @@ const Sidebar = ({ onItemClick }) => {
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
-      {/* Brand */}
       <div className="px-5 pt-6 pb-6">
-        <div className="flex items-center gap-2.5">
+        <Link to={"/"} className="flex items-center gap-2.5">
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
             style={{
@@ -102,9 +101,9 @@ const Sidebar = ({ onItemClick }) => {
           <span
             className="text-lg font-bold tracking-tight text-white"
           >
-            PulseBoard
+            MiraiVote
           </span>
-        </div>
+        </Link>
       </div>
 
       {/* Divider */}
