@@ -1,75 +1,98 @@
 import React, { useEffect, useState } from "react";
-import { Send, Info, Users } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Send, Users, CheckCircle2, Zap, BarChart2 } from "lucide-react";
+import { useParams, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { pollService } from "../services/poll.service";
+import { socket } from "../../../shared/socket/socket.js";
 import toast from "react-hot-toast";
+
+const BAR_COLORS = ["#a855f7", "#6366f1", "#ec4899", "#8b5cf6", "#06b6d4"];
 
 const PublicPollPage = () => {
   const [selectedOptions, setSelectedOptions] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [poll, setPoll] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const { pollId } = useParams();
 
   const isExpired = poll?.isExpired;
-
   const answeredCount = Object.keys(selectedOptions).length;
   const totalQuestions = poll?.questions?.length || 0;
-
-  const progressPercentage =
-    totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
-
+  const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+  const canSubmit = answeredCount === totalQuestions && !submitted && !submitting && !isExpired;
 
   const handleVote = (questionId, optionId) => {
     if (submitted || isExpired) return;
-
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [questionId]: optionId,
-    }));
+    setSelectedOptions((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
   useEffect(() => {
     const fetchPublicPoll = async () => {
       try {
         setLoading(true);
-
         const response = await pollService.fetchPublicPoll(pollId);
         setPoll(response.data);
-      } catch (error) {
-        console.log(error);
+      } catch {
         toast.error("Failed to load poll");
       } finally {
         setLoading(false);
       }
     };
-
     fetchPublicPoll();
   }, [pollId]);
 
+  // Socket: join poll room for live updates
+  useEffect(() => {
+    if (!pollId) return;
+    const onConnect = () => socket.emit("join_poll", pollId);
+    socket.on("connect", onConnect);
+    if (socket.connected) socket.emit("join_poll", pollId);
+    return () => socket.off("connect", onConnect);
+  }, [pollId]);
+
+  // Socket: live result updates
+  useEffect(() => {
+    const handlePollUpdate = (data) => {
+      setPoll((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          votes: data.votes,
+          people: data.people,
+          questions: prev.questions.map((question) => {
+            const updatedQ = data.questionVotes.find((q) => q.questionId === question._id);
+            if (!updatedQ) return question;
+            return {
+              ...question,
+              totalVotes: updatedQ.totalVotes,
+              options: question.options.map((option) => {
+                const updatedOpt = updatedQ.options.find((o) => o.optionId === option._id);
+                return updatedOpt
+                  ? { ...option, votes: updatedOpt.votes, percentage: updatedOpt.percentage }
+                  : option;
+              }),
+            };
+          }),
+        };
+      });
+    };
+    socket.on("poll_updated", handlePollUpdate);
+    return () => socket.off("poll_updated", handlePollUpdate);
+  }, []);
 
   const handleSubmit = async () => {
-    if (submitting || isExpired) return;
-
+    if (!canSubmit) return;
     try {
       setSubmitting(true);
-
-      const pollInfo = Object.entries(selectedOptions).map(
-        ([questionId, optionId]) => ({
-          questionId,
-          optionId,
-        }),
-      );
-
-      const response = await pollService.submitPoll(
-        pollId,
-        pollInfo
-      );
-
+      const pollInfo = Object.entries(selectedOptions).map(([questionId, optionId]) => ({
+        questionId,
+        optionId,
+      }));
+      const response = await pollService.submitPoll(pollId, pollInfo);
       setSubmitted(true);
-      toast.success(response.data.message);
+      toast.success(response.data.message || "Vote submitted!");
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
@@ -77,207 +100,371 @@ const PublicPollPage = () => {
     }
   };
 
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-400">
-        Loading poll...
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "#09090f", fontFamily: "'DM Sans', sans-serif" }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center animate-pulse"
+            style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}
+          >
+            <Zap size={22} className="text-white" />
+          </div>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Loading poll…</p>
+        </div>
       </div>
     );
   }
 
   if (!poll) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-400">
-        Poll not found
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "#09090f", fontFamily: "'DM Sans', sans-serif" }}
+      >
+        <div className="text-center">
+          <p className="text-lg font-bold text-white mb-2">Poll not found</p>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>This poll may have been removed or the link is invalid.</p>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}
+          >
+            Go to PulseBoard
+          </Link>
+        </div>
       </div>
     );
   }
 
+  // ── Success State ──────────────────────────────────────────────────────────
+  const showResults = submitted || isExpired;
+
   return (
-    <div className="flex min-h-screen bg-[#020617] text-slate-200 pb-20">
-      {/* PROGRESS BAR */}
-      <div className="fixed top-0 left-0 w-full h-1.5 bg-slate-900 z-50">
-        <div
-          className="h-full bg-blue-500 transition-all duration-300"
-          style={{ width: `${progressPercentage}%` }}
+    <div
+      className="min-h-screen pb-20"
+      style={{ background: "#09090f", fontFamily: "'DM Sans', sans-serif" }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+      `}</style>
+
+      {/* Progress Bar */}
+      <div
+        className="fixed top-0 left-0 w-full z-50"
+        style={{ height: "3px", background: "rgba(255,255,255,0.05)" }}
+      >
+        <motion.div
+          className="h-full"
+          style={{ background: "linear-gradient(90deg, #a855f7, #6366f1, #ec4899)" }}
+          initial={{ width: 0 }}
+          animate={{ width: `${progressPercentage}%` }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         />
       </div>
 
-      <main className="flex-1 pt-8">
-        <div className="p-6 max-w-2xl mx-auto space-y-6">
-          {/* HEADER */}
-          <header className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div className="flex gap-2">
-                <span className="bg-slate-800 text-[10px] px-2 py-1 rounded">
-                  {answeredCount}/{totalQuestions} Answered
-                </span>
-
-                <span className="bg-blue-500/10 text-blue-400 text-[10px] px-2 py-1 rounded flex items-center gap-1">
-                  <Users size={10} />
-                  {poll.people || 0} Joined
-                </span>
-              </div>
-
-              <div className="text-emerald-400 text-[10px] flex items-center gap-1">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                Live
-              </div>
+      {/* Header */}
+      <header
+        className="sticky top-0 z-40 flex items-center justify-between px-5 h-14"
+        style={{
+          background: "rgba(9,9,15,0.85)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}
+          >
+            <Zap size={14} className="text-white" />
+          </div>
+          <span className="text-sm font-bold text-white">PulseBoard</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <Users size={12} />
+            <span>{poll.people ?? 0} joined</span>
+          </div>
+          {!isExpired && (
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: "#c084fc" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+              Live
             </div>
+          )}
+        </div>
+      </header>
 
-            <h1 className="text-2xl font-bold text-white">{poll.title}</h1>
-
-            {poll.description && (
-              <p className="text-sm text-slate-400">{poll.description}</p>
-            )}
-
-            {/* EXPIRY NOTICE */}
+      <main className="max-w-xl mx-auto px-5 pt-8 space-y-6">
+        {/* Poll Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span
+              className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "rgba(255,255,255,0.5)",
+              }}
+            >
+              {answeredCount}/{totalQuestions} Answered
+            </span>
             {isExpired && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-2 rounded text-xs">
-                This poll has ended. Results are now visible.
-              </div>
-            )}
-          </header>
-
-          {/* QUESTIONS */}
-          <div className="space-y-4">
-            {poll.questions?.map((question, qIdx) => (
-              <div
-                key={question._id}
-                className="bg-[#0f172a]/40 border border-slate-800 rounded-xl p-5 space-y-4 transition-all"
+              <span
+                className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                style={{
+                  background: "rgba(239,68,68,0.1)",
+                  border: "1px solid rgba(239,68,68,0.2)",
+                  color: "#f87171",
+                }}
               >
-                <div className="flex justify-between items-start">
-                  <h3 className="text-white font-semibold text-base leading-tight max-w-[80%]">
-                    <span className="text-slate-500 font-mono text-sm mr-2">
-                      Q{qIdx + 1}.
-                    </span>
-                    {question.text}
-                  </h3>
+                Ended
+              </span>
+            )}
+          </div>
 
-                  <div className="flex flex-col items-end gap-1">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${isExpired ? "bg-slate-800 text-slate-400" : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"}`}
-                    >
-                      {isExpired ? "Closed" : "Live"}
-                    </span>
-                    <span className="text-[11px] text-slate-500 font-medium">
-                      {isExpired || poll.showLiveResults
-                        ? `${question.totalVotes || 0} votes`
-                        : "Votes hidden"}
-                    </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">{poll.title}</h1>
+          {poll.description && (
+            <p className="text-sm mt-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              {poll.description}
+            </p>
+          )}
+
+          {isExpired && (
+            <div
+              className="mt-3 px-4 py-3 rounded-xl text-sm"
+              style={{
+                background: "rgba(239,68,68,0.08)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                color: "#f87171",
+              }}
+            >
+              This poll has ended. Results are now visible.
+            </div>
+          )}
+        </motion.div>
+
+        {/* Questions */}
+        <div className="space-y-4">
+          {poll.questions?.map((question, qIdx) => {
+            const hasVotedThis = Boolean(selectedOptions[question._id]);
+            return (
+              <motion.div
+                key={question._id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: qIdx * 0.06 + 0.15, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.025)",
+                  border: `1px solid ${hasVotedThis && !showResults ? "rgba(168,85,247,0.25)" : "rgba(255,255,255,0.07)"}`,
+                  transition: "border-color 0.3s",
+                }}
+              >
+                {/* Question header */}
+                <div
+                  className="px-5 pt-5 pb-4"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm font-bold text-white leading-snug">
+                      <span style={{ color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
+                        Q{qIdx + 1}.{" "}
+                      </span>
+                      {question.text}
+                    </h3>
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                      {!isExpired ? (
+                        <span
+                          className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                          style={{
+                            background: "rgba(168,85,247,0.12)",
+                            border: "1px solid rgba(168,85,247,0.2)",
+                            color: "#c084fc",
+                          }}
+                        >
+                          Live
+                        </span>
+                      ) : (
+                        <span
+                          className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                          style={{
+                            background: "rgba(255,255,255,0.05)",
+                            color: "rgba(255,255,255,0.3)",
+                          }}
+                        >
+                          Closed
+                        </span>
+                      )}
+                      {showResults && (
+                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          {question.totalVotes ?? 0} votes
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* OPTIONS */}
-                <div className="grid gap-2">
-                  {question.options?.map((option) => {
-                    const isSelected =
-                      selectedOptions[question._id] === option._id;
-                    const percentage = isExpired ? option.percentage || 0 : 0;
+                {/* Options */}
+                <div className="p-3 space-y-2">
+                  {question.options?.map((option, oIdx) => {
+                    const isSelected = selectedOptions[question._id] === option._id;
+                    const pct = showResults ? (option.percentage || 0) : 0;
+                    const color = BAR_COLORS[oIdx % BAR_COLORS.length];
 
                     return (
                       <button
                         key={option._id}
                         onClick={() => handleVote(question._id, option._id)}
                         disabled={submitted || isExpired}
-                        className={`group relative w-full overflow-hidden rounded-lg border transition-all duration-200 ${
-                          isSelected
-                            ? "border-blue-500 bg-blue-500/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"
-                            : "border-slate-800 bg-[#020617]/40 hover:border-slate-700"
-                        } ${(submitted || isExpired) && "cursor-default"}`}
+                        className="group relative w-full overflow-hidden rounded-xl text-left transition-all duration-200"
+                        style={{
+                          background: isSelected
+                            ? "rgba(168,85,247,0.1)"
+                            : "rgba(255,255,255,0.03)",
+                          border: `1px solid ${isSelected ? "rgba(168,85,247,0.4)" : "rgba(255,255,255,0.06)"}`,
+                          boxShadow: isSelected ? "0 0 16px rgba(168,85,247,0.12)" : "none",
+                          cursor: submitted || isExpired ? "default" : "pointer",
+                        }}
                       >
-                        {/* RESULT BAR ONLY AFTER EXPIRY */}
-                        {isExpired && (
-                          <div
-                            className="absolute left-0 top-0 h-full bg-blue-500/10 transition-all duration-1000 ease-out"
-                            style={{ width: `${percentage}%` }}
+                        {/* Background bar for results */}
+                        {showResults && (
+                          <motion.div
+                            className="absolute inset-y-0 left-0 rounded-xl"
+                            style={{ background: `${color}15` }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.8, delay: oIdx * 0.1, ease: [0.16, 1, 0.3, 1] }}
                           />
                         )}
 
-                        <div className="relative p-3 flex items-center justify-between z-10">
+                        <div className="relative flex items-center justify-between px-4 py-3">
                           <div className="flex items-center gap-3">
-                            {/* CUSTOM CHECKBOX / RADIO UI */}
+                            {/* Custom radio */}
                             <div
-                              className={`w-5 h-5 rounded flex items-center justify-center border transition-all ${
-                                isSelected
-                                  ? "bg-blue-500 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                                  : "border-slate-700 bg-slate-900 group-hover:border-slate-500"
-                              }`}
+                              className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all"
+                              style={{
+                                background: isSelected
+                                  ? "linear-gradient(135deg, #a855f7, #6366f1)"
+                                  : "rgba(255,255,255,0.06)",
+                                border: `2px solid ${isSelected ? "transparent" : "rgba(255,255,255,0.15)"}`,
+                                boxShadow: isSelected ? "0 0 10px rgba(168,85,247,0.4)" : "none",
+                              }}
                             >
                               {isSelected && (
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  className="text-white"
-                                >
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
+                                <div className="w-2 h-2 rounded-full bg-white" />
                               )}
                             </div>
-
                             <span
-                              className={`text-sm font-medium transition-colors ${isSelected ? "text-white" : "text-slate-300"}`}
+                              className="text-sm font-medium"
+                              style={{ color: isSelected ? "#fff" : "rgba(255,255,255,0.65)" }}
                             >
                               {option.text}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            {isExpired ? (
-                              <span className="text-xs font-mono font-bold text-blue-400">
-                                {percentage}%
+                          {showResults ? (
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="text-xs font-bold tabular-nums"
+                                style={{ color }}
+                              >
+                                {pct}%
                               </span>
-                            ) : (
-                              isSelected && (
-                                <span className="text-[9px] uppercase font-bold text-blue-400 tracking-tighter">
-                                  Selected
-                                </span>
-                              )
-                            )}
-                          </div>
+                            </div>
+                          ) : isSelected ? (
+                            <span
+                              className="text-[10px] font-bold uppercase tracking-wider"
+                              style={{ color: "#c084fc" }}
+                            >
+                              Selected
+                            </span>
+                          ) : null}
                         </div>
                       </button>
                     );
                   })}
                 </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Submit / Success */}
+        <AnimatePresence mode="wait">
+          {submitted ? (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="rounded-2xl p-7 text-center"
+              style={{
+                background: "linear-gradient(135deg, rgba(168,85,247,0.1), rgba(99,102,241,0.08))",
+                border: "1px solid rgba(168,85,247,0.25)",
+              }}
+            >
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                style={{
+                  background: "linear-gradient(135deg, #a855f7, #6366f1)",
+                  boxShadow: "0 0 30px rgba(168,85,247,0.4)",
+                }}
+              >
+                <CheckCircle2 size={26} className="text-white" />
               </div>
-            ))}
-          </div>
-
-          {/* SUBMIT */}
-          <button
-            onClick={handleSubmit}
-            disabled={
-              submitted ||
-              submitting ||
-              isExpired ||
-              answeredCount < totalQuestions
-            }
-            className="w-full mt-6 bg-white text-black py-3 rounded-lg font-bold disabled:opacity-50"
-          >
-            <Send size={16} className="inline mr-2" />
-
-            {isExpired
-              ? "Poll Ended"
-              : submitted
-                ? "Submitted"
+              <h3 className="text-lg font-bold text-white mb-1">Thank you!</h3>
+              <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+                Your vote has been recorded. Results are live above.
+              </p>
+            </motion.div>
+          ) : !isExpired ? (
+            <motion.button
+              key="submit"
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: 0.4 }}
+              className="w-full py-3.5 rounded-2xl text-sm font-bold text-white transition-all duration-200 flex items-center justify-center gap-2"
+              style={{
+                background: canSubmit
+                  ? "linear-gradient(135deg, #a855f7, #6366f1)"
+                  : "rgba(255,255,255,0.06)",
+                border: canSubmit ? "none" : "1px solid rgba(255,255,255,0.1)",
+                color: canSubmit ? "#fff" : "rgba(255,255,255,0.35)",
+                boxShadow: canSubmit ? "0 0 30px rgba(168,85,247,0.35)" : "none",
+                cursor: canSubmit ? "pointer" : "not-allowed",
+                transform: canSubmit ? undefined : "none",
+              }}
+            >
+              <Send size={15} />
+              {submitting
+                ? "Submitting…"
                 : answeredCount === totalQuestions
-                  ? "Submit Vote"
-                  : `Answer all questions (${answeredCount}/${totalQuestions})`}
-          </button>
+                ? "Submit Vote"
+                : `Answer all questions (${answeredCount}/${totalQuestions})`}
+            </motion.button>
+          ) : null}
+        </AnimatePresence>
 
-          {/* FOOTER */}
-          <div className="text-center text-[10px] text-slate-600 mt-4 flex justify-center items-center gap-2">
-            <Info size={12} />
-            Secure blind voting system
-          </div>
+        {/* Footer */}
+        <div className="text-center text-[11px] pt-2 pb-10" style={{ color: "rgba(255,255,255,0.2)" }}>
+          Powered by{" "}
+          <Link to="/" className="font-semibold" style={{ color: "rgba(168,85,247,0.6)" }}>
+            PulseBoard
+          </Link>
+          {" "} · Secure real-time polling
         </div>
       </main>
     </div>

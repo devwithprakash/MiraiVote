@@ -2,18 +2,17 @@ import { Router } from "express";
 import { validate } from "../middleware/validate.middleware.js";
 import { pollSchema } from "../schemas/poll.schema.js";
 import * as controller from "../controllers/poll.controller.js";
-import { authMiddleware } from "../middleware/auth.middleware.js";
-import { authOptional } from "../middleware/auth-optional.middleware.js";
+import { requireAuth } from "@clerk/express";
 
 const router = Router();
 
-router.post("/", authMiddleware, validate(pollSchema), controller.createPoll);
-router.get("/analytics/:pollId", authMiddleware, controller.fetchAnalytics);
-router.get("/", authMiddleware, controller.fetchAllPolls);
-router.get("/:id", authMiddleware, controller.fetchPoll);
-router.get("/public/:id", authOptional, controller.fetchPoll);
-router.post("/:id/submit", authOptional, controller.submitPoll);
-router.get("/:token/result", authOptional, controller.pollResult);
-router.delete("/:id", authMiddleware, controller.deletePoll);
+router.post("/", requireAuth(), validate(pollSchema), controller.createPoll);
+router.get("/analytics/:pollId", requireAuth(), controller.fetchAnalytics);
+router.get("/", requireAuth(), controller.fetchAllPolls);
+router.get("/:id", requireAuth(), controller.fetchPoll);
+router.get("/public/:id", requireAuth(), controller.fetchPoll);
+router.post("/:id/submit", requireAuth(), controller.submitPoll);
+router.get("/:token/result", requireAuth(), controller.pollResult);
+router.delete("/:id", requireAuth(), controller.deletePoll);
 
 export default router;

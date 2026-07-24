@@ -4,6 +4,7 @@ import pollRoute from "./routes/poll.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import errorHandler from "./middleware/error.middleware.js";
+import {clerkMiddleware, requireAuth} from "@clerk/express"
 
 const app = express();
 
@@ -16,13 +17,15 @@ app.use(
   }),
 );
 
+app.use(clerkMiddleware());
+
 app.get("/", (req, res) => console.log("Hello from Server"));
 
 app.get("/health", (req, res) => {
   res.json({ healthy: true });
 });
 
-app.use("/api/users", userRoute);
+app.use("/api/users",requireAuth(), userRoute);
 app.use("/api/polls", pollRoute);
 
 app.use(errorHandler);

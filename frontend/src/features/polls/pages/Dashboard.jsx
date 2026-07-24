@@ -1,175 +1,319 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  LayoutDashboard,
-  BarChart3,
   Plus,
-  LogOut,
+  ListChecks,
+  BarChart3,
   Users,
-  BarChart2,
-  Share2,
-  PanelLeftClose,
+  Zap,
+  ArrowRight,
+  TrendingUp,
   Vote,
-  Trash2,
 } from "lucide-react";
 import { pollService } from "../services/poll.service.js";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { useUser } from "@clerk/clerk-react";
 
-const PollCard = ({ title, description, votes, people, type, id }) => {
-  const navigate = useNavigate();
-
-  
-
-  const handleNavigate = () => {
-    navigate(`/poll/${id}`);
-  };
-
-  const handleDelete = async () => {
-    try {
-      const data = await pollService.deletePoll(id);
-
-      toast.success("Poll deleted successfully");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  return (
-    <div
-      onClick={handleNavigate}
-      className="group relative bg-[#0B1120] border border-slate-800 rounded-3xl p-6 hover:border-slate-700 hover:bg-[#0d1426] transition-all duration-300 hover:-translate-y-1"
-    >
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">
-          Live
-        </span>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDelete();
-          }}
-          className="p-2 rounded-xl bg-slate-800/40 text-slate-400 border border-slate-700 cursor-pointer hover:bg-slate-500/10 hover:text-slate-400 hover:border-slate-500/30 transition"
-        >
-          <Trash2 size={16} />
-        </button>
-      </div>
-
-      {/* Top Content */}
-      <div className="pr-16">
-        <h3 className="text-xl font-semibold text-white truncate">{title}</h3>
-
-        {description && (
-          <p className="text-slate-400 text-sm mt-2 line-clamp-2">
-            {description}
-          </p>
-        )}
-      </div>
-
-      {/* Stats */}
-      <div className="flex flex-wrap gap-5 mt-8 text-sm text-slate-400">
-        <div className="flex items-center gap-2">
-          <Vote size={16} />
-          <span>{votes} votes</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Users size={16} />
-          <span>{people} people</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Share2 size={16} />
-          <span>{type}</span>
-        </div>
-      </div>
-    </div>
-  );
+const FADE_UP = {
+  hidden: { opacity: 0, y: 20 },
+  show: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] },
+  }),
 };
 
-const PollCardSkeleton = () => {
-  return (
-    <div className="bg-[#0B1120] border border-slate-800 rounded-3xl p-6 space-y-4 animate-pulse">
-      <div className="flex justify-between items-start">
-        <div className="h-6 w-3/4 bg-slate-800 rounded-lg"></div>
-        <div className="h-5 w-12 bg-slate-800 rounded-md"></div>
+const StatCard = ({ icon: Icon, label, value, accent, index }) => (
+  <motion.div
+    custom={index}
+    initial="hidden"
+    animate="show"
+    variants={FADE_UP}
+    className="relative overflow-hidden rounded-2xl p-5"
+    style={{
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(255,255,255,0.07)",
+    }}
+  >
+    <div
+      className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-20"
+      style={{ background: accent }}
+    />
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+          {label}
+        </p>
+        <p className="text-3xl font-bold text-white">{value ?? "—"}</p>
       </div>
-      <div className="space-y-2">
-        <div className="h-4 w-full bg-slate-800/50 rounded"></div>
-        <div className="h-4 w-2/3 bg-slate-800/50 rounded"></div>
-      </div>
-      <div className="flex gap-4 pt-2">
-        <div className="h-4 w-16 bg-slate-800 rounded"></div>
-        <div className="h-4 w-16 bg-slate-800 rounded"></div>
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+        style={{ background: `${accent}22`, border: `1px solid ${accent}33` }}
+      >
+        <Icon size={18} style={{ color: accent }} />
       </div>
     </div>
+  </motion.div>
+);
+
+const RecentPollCard = ({ poll, index }) => {
+  const isExpired = poll.isExpired;
+  return (
+    <motion.div
+      custom={index}
+      initial="hidden"
+      animate="show"
+      variants={FADE_UP}
+    >
+      <Link
+        to={`/poll/${poll._id}`}
+        className="group flex items-center justify-between p-4 rounded-xl transition-all duration-200"
+        style={{
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(168,85,247,0.06)";
+          e.currentTarget.style.borderColor = "rgba(168,85,247,0.2)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+        }}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{
+              background: isExpired ? "rgba(255,255,255,0.2)" : "#a855f7",
+              boxShadow: isExpired ? "none" : "0 0 8px rgba(168,85,247,0.6)",
+            }}
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white truncate">{poll.title}</p>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+              {poll.votes ?? 0} votes · {poll.people ?? 0} participants
+            </p>
+          </div>
+        </div>
+        <ArrowRight
+          size={16}
+          className="shrink-0 transition-transform group-hover:translate-x-1"
+          style={{ color: "rgba(255,255,255,0.25)" }}
+        />
+      </Link>
+    </motion.div>
   );
 };
 
 const Dashboard = () => {
   const [polls, setPolls] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
   useEffect(() => {
-    const fetchPolls = async () => {
+    const load = async () => {
       try {
         setLoading(true);
-        const response = await pollService.fetchAllPolls();
-
-        setPolls(response.data);
-      } catch (error) {
-        console.log(error);
+        const [pollsRes, analyticsRes] = await Promise.all([
+          pollService.fetchAllPolls(),
+          pollService.fetchAnalytics("all"),
+        ]);
+        setPolls(pollsRes.data || []);
+        setAnalytics(analyticsRes.data || null);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchPolls();
+    load();
   }, []);
 
+  const activePolls = polls.filter((p) => !p.isExpired).length;
+  const recentPolls = [...polls].slice(0, 5);
+
+  const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
-    <div className="w-full">
-      {/* Header */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-10">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-            Your polls
+    <div className="space-y-8" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Welcome Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="relative overflow-hidden rounded-2xl px-7 py-8"
+        style={{
+          background: "linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(99,102,241,0.08) 50%, rgba(236,72,153,0.06) 100%)",
+          border: "1px solid rgba(168,85,247,0.2)",
+        }}
+      >
+        <div
+          className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-30 pointer-events-none"
+          style={{ background: "radial-gradient(circle, #a855f7, transparent)" }}
+        />
+        <div
+          className="absolute bottom-0 left-1/3 w-32 h-32 rounded-full blur-2xl opacity-20 pointer-events-none"
+          style={{ background: "radial-gradient(circle, #6366f1, transparent)" }}
+        />
+        <div className="relative">
+          <p className="text-sm font-medium mb-1" style={{ color: "rgba(192,132,252,0.8)" }}>
+            {greeting()},
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+            {user?.fullName || user?.firstName || "there"} 👋
           </h1>
-          <p className="text-slate-400 mt-2 text-sm sm:text-base">
-            Create, share, and analyze live polls.
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+            {activePolls > 0
+              ? `You have ${activePolls} active poll${activePolls !== 1 ? "s" : ""} running right now.`
+              : "No active polls. Create one to start collecting responses."}
           </p>
         </div>
+        <div className="relative flex flex-wrap gap-3 mt-6">
+          <Link
+            to="/create"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 hover:scale-105"
+            style={{
+              background: "linear-gradient(135deg, #a855f7, #6366f1)",
+              boxShadow: "0 0 20px rgba(168,85,247,0.35)",
+            }}
+          >
+            <Plus size={16} />
+            Create Poll
+          </Link>
+          <Link
+            to="/polls"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-white/10"
+            style={{
+              color: "rgba(255,255,255,0.7)",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
+          >
+            <ListChecks size={16} />
+            View All Polls
+          </Link>
+        </div>
+      </motion.div>
 
-        <Link
-          to="/create"
-          className="h-12 px-5 rounded-2xl bg-slate-100 hover:bg-white text-slate-900 font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+      {/* Stats Grid */}
+      <div>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-xs font-bold uppercase tracking-widest mb-4"
+          style={{ color: "rgba(255,255,255,0.3)" }}
         >
-          <Plus size={18} />
-          <span>New poll</span>
-        </Link>
+          Overview
+        </motion.p>
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <StatCard
+            index={0}
+            icon={ListChecks}
+            label="Total Polls"
+            value={loading ? "…" : analytics?.stats?.totalPolls ?? polls.length}
+            accent="#a855f7"
+          />
+          <StatCard
+            index={1}
+            icon={Vote}
+            label="Total Votes"
+            value={loading ? "…" : analytics?.stats?.totalVotes ?? 0}
+            accent="#6366f1"
+          />
+          <StatCard
+            index={2}
+            icon={Users}
+            label="Participants"
+            value={loading ? "…" : analytics?.stats?.totalParticipants ?? 0}
+            accent="#ec4899"
+          />
+          <StatCard
+            index={3}
+            icon={Zap}
+            label="Active Polls"
+            value={loading ? "…" : activePolls}
+            accent="#8b5cf6"
+          />
+        </div>
       </div>
 
-      {/* Polls Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {loading
-          ? // Skeleton State
-            Array.from({ length: 6 }).map((_, i) => (
-              <PollCardSkeleton key={i} />
-            ))
-          : // Actual Content
-            polls?.map((poll) => (
-              <PollCard
-                key={poll._id}
-                title={poll.title}
-                description={poll.description}
-                votes={poll.votes}
-                people={poll.people}
-                type={poll.mode}
-                id={poll._id}
+      {/* Recent Polls */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-xs font-bold uppercase tracking-widest"
+            style={{ color: "rgba(255,255,255,0.3)" }}
+          >
+            Recent Polls
+          </motion.p>
+          <Link
+            to="/polls"
+            className="flex items-center gap-1 text-xs font-semibold transition-colors hover:opacity-80"
+            style={{ color: "#c084fc" }}
+          >
+            View all <ArrowRight size={12} />
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="h-14 rounded-xl animate-pulse"
+                style={{ background: "rgba(255,255,255,0.04)" }}
               />
             ))}
+          </div>
+        ) : recentPolls.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-16 text-center rounded-2xl"
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px dashed rgba(255,255,255,0.08)",
+            }}
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+              style={{ background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)" }}
+            >
+              <ListChecks size={24} style={{ color: "#c084fc" }} />
+            </div>
+            <p className="text-base font-semibold text-white mb-1">No polls yet</p>
+            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Create your first poll and start collecting responses.
+            </p>
+            <Link
+              to="/create"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{
+                background: "linear-gradient(135deg, #a855f7, #6366f1)",
+                boxShadow: "0 0 20px rgba(168,85,247,0.3)",
+              }}
+            >
+              <Plus size={15} />
+              Create your first poll
+            </Link>
+          </motion.div>
+        ) : (
+          <div className="space-y-2">
+            {recentPolls.map((poll, i) => (
+              <RecentPollCard key={poll._id} poll={poll} index={i} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

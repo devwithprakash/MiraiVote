@@ -24,8 +24,9 @@ io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
   // join poll room
-  socket.on("join_poll", (pollId) => {
-    socket.join(`poll:${pollId}`);
+  socket.on("join_poll", async (pollId) => {
+    // user join in this group
+    await socket.join(`poll:${pollId}`);
 
     console.log(`Socket ${socket.id} joined poll:${pollId}`);
   });

@@ -2,7 +2,6 @@ import * as service from "../services/poll.service.js";
 import ApiResponse from "../utils/api-response.js";
 
 const createPoll = async (req, res) => {
-  console.log("Hello");
   const result = await service.createPoll(req.body, req.userId);
 
   ApiResponse.created(res, "Poll created successfully", result);

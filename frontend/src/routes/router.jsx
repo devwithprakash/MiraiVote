@@ -2,7 +2,8 @@ import { createBrowserRouter } from "react-router-dom";
 
 import Home from "../features/landing/Home";
 import Dashboard from "../features/polls/pages/Dashboard";
-import Analytics from "../features/polls/pages/Analytics";
+import PollsList from "../features/polls/pages/PollsList";
+import PollAnalytics from "../features/polls/pages/PollAnalytics";
 import CreatePoll from "../features/polls/pages/CreatePoll";
 import PollDetail from "../features/polls/pages/PollDetail";
 import PublicPollPage from "../features/polls/pages/PublicPollPage";
@@ -28,8 +29,16 @@ export const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
-        path: "/analytics",
-        element: <Analytics />,
+        path: "/polls",
+        element: <PollsList />,
+      },
+      {
+        path: "/polls/:id/analytics",
+        element: <PollAnalytics />,
+      },
+      {
+        path: "/polls/:id/edit",
+        element: <CreatePoll />,
       },
       {
         path: "/create",

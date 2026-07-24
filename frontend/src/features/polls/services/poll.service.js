@@ -45,13 +45,10 @@ export const pollService = {
   },
 
   async submitPoll(id, pollInfo) {
-    const { data } = await api.post(
-      `/polls/${id}/submit`,
-      {
-        pollInfo,
-        anonymousId: getAnonymousId(),
-      }
-    );
+    const { data } = await api.post(`/polls/${id}/submit`, {
+      pollInfo,
+      anonymousId: getAnonymousId(),
+    });
 
     return data;
   },
