@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { pollService } from "../services/poll.service.js";
 import { socket } from "../../../shared/socket/socket.js";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 16 },
@@ -56,6 +57,7 @@ const PollDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const {getToken} = useAuth()
 
   const pollUrl = `${window.location.origin}/public/${poll?._id}`;
 
@@ -74,7 +76,8 @@ const PollDetail = () => {
     const fetchPoll = async () => {
       try {
         setLoading(true);
-        const response = await pollService.fetchPoll(id);
+        const token = await getToken()
+        const response = await pollService.fetchPoll(id, token);
         setPoll(response.data);
       } catch {
         toast.error("Failed to load poll");

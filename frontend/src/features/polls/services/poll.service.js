@@ -2,28 +2,55 @@ import { getAnonymousId } from "./anonymous.js";
 import { api } from "../../../shared/lib/api.js";
 
 export const pollService = {
-  async createPoll({ title, mode, expireAt, questions }, token) {
-    const { data } = await api.post(
-      "/poll",
-      {
-        title,
-        mode,
-        expireAt,
-        questions,
-      },
-      {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`,
+  async createPoll(
+    { title, mode, expireAt, questions },
+    token,
+    isEditMode,
+    pollId,
+  ) {
+    if (!isEditMode) {
+      const { data } = await api.post(
+        "/poll",
+        {
+          title,
+          mode,
+          expireAt,
+          questions,
         },
-      },
-    );
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-    return data;
+      return data;
+    } else {
+      console.log("Hit the route");
+      const { data } = await api.patch(
+        `/poll/${pollId}`,
+        {
+          title,
+          mode,
+          expireAt,
+          questions,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      return data;
+    }
   },
 
-  async fetchAllPolls() {
-    const { data } = await api.get("/poll");
+  async fetchAllPolls(token) {
+    const { data } = await api.get("/poll", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     return data;
   },
@@ -34,17 +61,17 @@ export const pollService = {
     return data;
   },
 
-  async fetchPoll(id) {
+  async fetchPoll(id, token) {
     const { data } = await api.get(`/poll/${id}`, {
-      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     return data;
   },
   async fetchPublicPoll(id) {
-    const { data } = await api.get(`/poll/public/${id}`, {
-      withCredentials: true,
-    });
+    const { data } = await api.get(`/poll/public/${id}`, {});
 
     return data;
   },

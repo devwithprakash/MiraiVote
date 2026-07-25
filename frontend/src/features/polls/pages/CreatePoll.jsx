@@ -41,8 +41,7 @@ const CreatePoll = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
-    const { getToken } = useAuth();
-
+  const { getToken } = useAuth();
 
   const [generalInfo, setGeneralInfo] = useState({
     title: "",
@@ -60,8 +59,10 @@ const CreatePoll = () => {
     if (!isEditMode) return;
     const load = async () => {
       try {
-        const res = await pollService.fetchPoll(id);
+        const token = await getToken();
+        const res = await pollService.fetchPoll(id, token);
         const p = res.data;
+
         setGeneralInfo({
           title: p.title || "",
           mode: p.mode || "anonymous",
@@ -172,7 +173,7 @@ const CreatePoll = () => {
     try {
       setSubmitting(true);
 
-      await pollService.createPoll(payload, token);
+      await pollService.createPoll(payload, token, isEditMode, id);
       toast.success(isEditMode ? "Poll updated!" : "Poll created!");
       navigate("/polls");
     } catch (err) {

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { pollService } from "../services/poll.service.js";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -26,7 +27,6 @@ const FADE_UP = {
   }),
 };
 
-// ── Delete Confirm Modal ──────────────────────────────────────────────────────
 const DeleteModal = ({ poll, onConfirm, onCancel }) => (
   <motion.div
     className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -53,14 +53,18 @@ const DeleteModal = ({ poll, onConfirm, onCancel }) => (
     >
       <div
         className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2"
-        style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}
+        style={{
+          background: "rgba(239,68,68,0.1)",
+          border: "1px solid rgba(239,68,68,0.2)",
+        }}
       >
         <AlertTriangle size={22} className="text-red-400" />
       </div>
       <div>
         <h3 className="text-lg font-bold text-white">Delete poll?</h3>
         <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-          <span className="text-white font-medium">"{poll.title}"</span> and all its responses will be permanently deleted.
+          <span className="text-white font-medium">"{poll.title}"</span> and all
+          its responses will be permanently deleted.
         </p>
       </div>
       <div className="flex gap-3 pt-1">
@@ -87,7 +91,6 @@ const DeleteModal = ({ poll, onConfirm, onCancel }) => (
   </motion.div>
 );
 
-// ── Poll Card ─────────────────────────────────────────────────────────────────
 const PollCard = ({ poll, index, onDelete }) => {
   const navigate = useNavigate();
   const isExpired = poll.isExpired;
@@ -132,7 +135,6 @@ const PollCard = ({ poll, index, onDelete }) => {
         e.currentTarget.style.boxShadow = "none";
       }}
     >
-      {/* Gradient accent top line */}
       <div
         className="absolute top-0 left-0 right-0 h-px"
         style={{
@@ -142,9 +144,7 @@ const PollCard = ({ poll, index, onDelete }) => {
         }}
       />
 
-      {/* Card Body */}
       <div className="p-5" onClick={handleCardClick}>
-        {/* Top row: title + status badge */}
         <div className="flex items-start gap-3 mb-4">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -200,8 +200,10 @@ const PollCard = ({ poll, index, onDelete }) => {
           </div>
         </div>
 
-        {/* Stats row */}
-        <div className="flex flex-wrap items-center gap-4 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <div
+          className="flex flex-wrap items-center gap-4 text-xs"
+          style={{ color: "rgba(255,255,255,0.4)" }}
+        >
           <div className="flex items-center gap-1.5">
             <Vote size={13} />
             <span>{poll.votes ?? 0} votes</span>
@@ -223,10 +225,8 @@ const PollCard = ({ poll, index, onDelete }) => {
         </div>
       </div>
 
-      {/* Divider */}
       <div style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
 
-      {/* Action Row */}
       <div className="flex items-center px-5 py-3 gap-2">
         <button
           onClick={(e) => {
@@ -251,7 +251,7 @@ const PollCard = ({ poll, index, onDelete }) => {
           }}
         >
           <ExternalLink size={12} />
-          Live View
+          Live
         </button>
 
         <button
@@ -338,37 +338,59 @@ const PollCard = ({ poll, index, onDelete }) => {
   );
 };
 
-// ── Skeleton Card ─────────────────────────────────────────────────────────────
 const SkeletonCard = ({ i }) => (
   <div
     className="rounded-2xl p-5 space-y-4 animate-pulse"
-    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}
+    style={{
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(255,255,255,0.05)",
+    }}
   >
     <div className="flex gap-2">
-      <div className="h-5 w-14 rounded-full" style={{ background: "rgba(255,255,255,0.07)" }} />
-      <div className="h-5 w-16 rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
+      <div
+        className="h-5 w-14 rounded-full"
+        style={{ background: "rgba(255,255,255,0.07)" }}
+      />
+      <div
+        className="h-5 w-16 rounded-full"
+        style={{ background: "rgba(255,255,255,0.05)" }}
+      />
     </div>
-    <div className="h-5 w-3/4 rounded-lg" style={{ background: "rgba(255,255,255,0.07)" }} />
-    <div className="h-4 w-full rounded" style={{ background: "rgba(255,255,255,0.04)" }} />
+    <div
+      className="h-5 w-3/4 rounded-lg"
+      style={{ background: "rgba(255,255,255,0.07)" }}
+    />
+    <div
+      className="h-4 w-full rounded"
+      style={{ background: "rgba(255,255,255,0.04)" }}
+    />
     <div className="flex gap-4 pt-1">
-      <div className="h-3 w-14 rounded" style={{ background: "rgba(255,255,255,0.05)" }} />
-      <div className="h-3 w-14 rounded" style={{ background: "rgba(255,255,255,0.05)" }} />
+      <div
+        className="h-3 w-14 rounded"
+        style={{ background: "rgba(255,255,255,0.05)" }}
+      />
+      <div
+        className="h-3 w-14 rounded"
+        style={{ background: "rgba(255,255,255,0.05)" }}
+      />
     </div>
   </div>
 );
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
 const PollsList = () => {
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingPoll, setDeletingPoll] = useState(null);
   const [filter, setFilter] = useState("all"); // all | active | ended
 
+  const { getToken } = useAuth();
+
   useEffect(() => {
     const fetchPolls = async () => {
       try {
         setLoading(true);
-        const response = await pollService.fetchAllPolls();
+        const token = await getToken();
+        const response = await pollService.fetchAllPolls(token);
         setPolls(response.data || []);
       } catch (error) {
         toast.error("Failed to load polls");
@@ -400,13 +422,18 @@ const PollsList = () => {
 
   const FILTERS = [
     { key: "all", label: `All (${polls.length})` },
-    { key: "active", label: `Active (${polls.filter((p) => !p.isExpired).length})` },
-    { key: "ended", label: `Ended (${polls.filter((p) => p.isExpired).length})` },
+    {
+      key: "active",
+      label: `Active (${polls.filter((p) => !p.isExpired).length})`,
+    },
+    {
+      key: "ended",
+      label: `Ended (${polls.filter((p) => p.isExpired).length})`,
+    },
   ];
 
   return (
     <div className="space-y-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <motion.h1
@@ -480,7 +507,9 @@ const PollsList = () => {
       {/* Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {[...Array(6)].map((_, i) => <SkeletonCard key={i} i={i} />)}
+          {[...Array(6)].map((_, i) => (
+            <SkeletonCard key={i} i={i} />
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <motion.div
@@ -493,14 +522,20 @@ const PollsList = () => {
         >
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
-            style={{ background: "rgba(168,85,247,0.08)", border: "1px solid rgba(168,85,247,0.18)" }}
+            style={{
+              background: "rgba(168,85,247,0.08)",
+              border: "1px solid rgba(168,85,247,0.18)",
+            }}
           >
             <ListChecks size={28} style={{ color: "#c084fc" }} />
           </div>
           <p className="text-lg font-bold text-white mb-2">
             {filter === "all" ? "No polls yet" : `No ${filter} polls`}
           </p>
-          <p className="text-sm mb-6 max-w-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <p
+            className="text-sm mb-6 max-w-xs"
+            style={{ color: "rgba(255,255,255,0.35)" }}
+          >
             {filter === "all"
               ? "Create your first poll and start collecting real-time responses."
               : `You don't have any ${filter} polls right now.`}
