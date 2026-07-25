@@ -404,7 +404,8 @@ const PollsList = () => {
   const handleDeleteConfirm = async () => {
     if (!deletingPoll) return;
     try {
-      await pollService.deletePoll(deletingPoll._id);
+      const token = await getToken()
+      await pollService.deletePoll(deletingPoll._id, token);
       setPolls((prev) => prev.filter((p) => p._id !== deletingPoll._id));
       toast.success("Poll deleted");
     } catch {

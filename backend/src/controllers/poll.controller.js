@@ -18,7 +18,8 @@ const fetchPoll = async (req, res) => {
 };
 
 const fetchAnalytics = async (req, res) => {
-  const result = await service.fetchAnalytics(req.userId, req.params.pollId);
+  const {userId} = getAuth(req)
+  const result = await service.fetchAnalytics(userId, req.params.pollId);
 
   ApiResponse.ok(res, "polls analytics", result);
 };
@@ -55,7 +56,8 @@ const pollResult = async (req, res) => {
 };
 
 const deletePoll = async (req, res) => {
-  const result = await service.deletePoll(req.params.id);
+  const {userId} = getAuth(req)
+  const result = await service.deletePoll(req.params.id, userId);
   ApiResponse.ok(res, "Poll deleted successfully", result);
 };
 

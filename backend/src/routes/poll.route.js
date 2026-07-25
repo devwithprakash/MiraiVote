@@ -7,15 +7,14 @@ const router = Router();
 
 router.post("/", validate(createPollSchema), controller.createPoll);
 router.get("/", controller.fetchAllPolls);
-router.patch("/:pollId", validate(updatePollSchema),  controller.updatePoll);
-
+router.patch("/:pollId", validate(updatePollSchema), controller.updatePoll);
+router.get("/:id", controller.fetchPoll);
+router.get("/:pollId/analytics", controller.fetchAnalytics);
+router.delete("/:id", controller.deletePoll);
 
 // remaining routes
-router.get("/analytics/:pollId", controller.fetchAnalytics);
-router.get("/:id", controller.fetchPoll);
 router.get("/public/:id", controller.fetchPoll);
 router.post("/:id/submit", controller.submitPoll);
 router.get("/:token/result", controller.pollResult);
-router.delete("/:id", controller.deletePoll);
 
 export default router;

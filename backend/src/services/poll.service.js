@@ -213,128 +213,40 @@ const updatePoll = async (payload, pollId, userId) => {
   }
 };
 
+const deletePoll = async (pollId, userId) => {
+  const user = await getUser(userId);
+  const poll = await Poll.findOne({ _id: pollId, creatorId: user._id });
+
+  if (!poll) {
+    throw ApiError.notfound("Poll not found");
+  }
+
+  const questions = await Question.find({ pollId: poll._id });
+  const questionIds = questions.map((q) => q._id);
+
+  await Answer.deleteMany({
+    questionId: { $in: questionIds },
+  });
+
+  await Option.deleteMany({
+    questionId: { $in: questionIds },
+  });
+
+  await Question.deleteMany({
+    pollId: poll._id,
+  });
+
+  await Participant.deleteMany({
+    pollId: poll._id,
+  });
+
+  await Poll.findByIdAndDelete(pollId);
+};
+
 // Remaining services
 
 const fetchAnalytics = async (userId, pollId) => {
-  const userPolls = await Poll.find({
-    creatorId: userId,
-  }).lean();
-
-  const filteredPolls =
-    pollId && pollId !== "all"
-      ? userPolls.filter((poll) => poll._id.toString() === pollId.toString())
-      : userPolls;
-
-  const pollIds = filteredPolls.map((poll) => poll._id);
-
-  if (!pollIds.length) {
-    return {
-      selectedPoll: pollId || "all",
-
-      stats: {
-        totalPolls: 0,
-        totalVotes: 0,
-        totalParticipants: 0,
-        totalQuestions: 0,
-        activePolls: 0,
-      },
-
-      timelineData: [],
-      engagementData: [],
-      topPoll: null,
-      polls: [],
-    };
-  }
-
-  const [totalVotes, totalParticipants, totalQuestions] = await Promise.all([
-    Answer.countDocuments({
-      pollId: { $in: pollIds },
-    }),
-
-    Participant.countDocuments({
-      pollId: { $in: pollIds },
-    }),
-
-    Question.countDocuments({
-      pollId: { $in: pollIds },
-    }),
-  ]);
-
-  const activePolls = filteredPolls.filter(
-    (poll) => !poll.expireAt || new Date(poll.expireAt) > new Date(),
-  ).length;
-
-  const pollsWithStats = await Promise.all(
-    filteredPolls.map(async (poll) => {
-      const [votes, people, questions] = await Promise.all([
-        Answer.countDocuments({
-          pollId: poll._id,
-        }),
-
-        Participant.countDocuments({
-          pollId: poll._id,
-        }),
-
-        Question.countDocuments({
-          pollId: poll._id,
-        }),
-      ]);
-
-      return {
-        _id: poll._id,
-
-        title: poll.title,
-
-        expireAt: poll.expireAt,
-
-        votes,
-
-        people,
-
-        questions,
-      };
-    }),
-  );
-
-  const timelineData = pollsWithStats.map((poll, index) => ({
-    name: `Poll ${index + 1}`,
-
-    votes: poll.votes,
-  }));
-
-  const engagementData = pollsWithStats.map((poll) => ({
-    name: poll.title.length > 12 ? poll.title.slice(0, 12) + "..." : poll.title,
-
-    votes: poll.votes,
-
-    participants: poll.people,
-  }));
-
-  const topPoll = pollsWithStats.sort((a, b) => b.votes - a.votes)[0] || null;
-
-  return {
-    selectedPoll: pollId || "all",
-
-    stats: {
-      totalPolls: filteredPolls.length,
-
-      totalVotes,
-
-      totalParticipants,
-
-      totalQuestions,
-
-      activePolls,
-    },
-
-    timelineData,
-
-    engagementData,
-
-    topPoll,
-
-    polls: pollsWithStats,
-  };
+  const user = await getUser(userId);
 };
 
 const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
@@ -598,35 +510,6 @@ const pollResult = async (shareToken, userId) => {
     totalParticipants,
     questions: formattedQuestions,
   };
-};
-
-const deletePoll = async (pollId) => {
-  const poll = await Poll.findById(pollId);
-
-  if (!poll) {
-    throw ApiError.notfound("Poll not found");
-  }
-
-  const questions = await Question.find({ pollId: poll._id });
-  const questionIds = questions.map((q) => q._id);
-
-  await Answer.deleteMany({
-    questionId: { $in: questionIds },
-  });
-
-  await Option.deleteMany({
-    questionId: { $in: questionIds },
-  });
-
-  await Question.deleteMany({
-    pollId: poll._id,
-  });
-
-  await Participant.deleteMany({
-    pollId: poll._id,
-  });
-
-  await Poll.findByIdAndDelete(pollId);
 };
 
 export {

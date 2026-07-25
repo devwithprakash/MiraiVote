@@ -91,9 +91,11 @@ export const pollService = {
     return data;
   },
 
-  async deletePoll(pollId) {
+  async deletePoll(pollId, token) {
     const { data } = await api.delete(`/poll/${pollId}`, {
-      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     return data;
