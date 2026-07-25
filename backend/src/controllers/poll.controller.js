@@ -4,6 +4,7 @@ import ApiResponse from "../utils/api-response.js";
 
 const createPoll = async (req, res) => {
   const { userId } = getAuth(req);
+
   const result = await service.createPoll(req.body, userId);
 
   ApiResponse.created(res, "Poll created successfully", result);

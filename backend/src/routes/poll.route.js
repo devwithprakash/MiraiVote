@@ -6,7 +6,7 @@ import { requireAuth } from "@clerk/express";
 
 const router = Router();
 
-router.post("/", requireAuth(), validate(createPollSchema), controller.createPoll);
+router.post("/", validate(createPollSchema), controller.createPoll);
 
 
 router.get("/analytics/:pollId", requireAuth(), controller.fetchAnalytics);

@@ -4,6 +4,7 @@ import { pollService } from "../services/poll.service";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@clerk/clerk-react";
 
 const FIELD_STYLE = {
   width: "100%",
@@ -21,10 +22,15 @@ const FIELD_STYLE = {
 
 const InputWrapper = ({ label, children, optional = false }) => (
   <div className="space-y-2">
-    <label className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.7)" }}>
+    <label
+      className="text-sm font-semibold"
+      style={{ color: "rgba(255,255,255,0.7)" }}
+    >
       {label}{" "}
       {optional && (
-        <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>(optional)</span>
+        <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>
+          (optional)
+        </span>
       )}
     </label>
     {children}
@@ -33,8 +39,10 @@ const InputWrapper = ({ label, children, optional = false }) => (
 
 const CreatePoll = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // if present → edit mode
+  const { id } = useParams();
   const isEditMode = Boolean(id);
+    const { getToken } = useAuth();
+
 
   const [generalInfo, setGeneralInfo] = useState({
     title: "",
@@ -57,15 +65,20 @@ const CreatePoll = () => {
         setGeneralInfo({
           title: p.title || "",
           mode: p.mode || "anonymous",
-          expireAt: p.expireAt ? new Date(p.expireAt).toISOString().slice(0, 16) : "",
+          expireAt: p.expireAt
+            ? new Date(p.expireAt).toISOString().slice(0, 16)
+            : "",
         });
         if (p.questions?.length) {
           setQuestions(
             p.questions.map((q) => ({
               id: q._id || Date.now(),
               text: q.text || "",
-              options: q.options?.map((o) => ({ text: o.text || "" })) || [{ text: "" }, { text: "" }],
-            }))
+              options: q.options?.map((o) => ({ text: o.text || "" })) || [
+                { text: "" },
+                { text: "" },
+              ],
+            })),
           );
         }
       } catch {
@@ -88,7 +101,8 @@ const CreatePoll = () => {
   };
 
   const removeQuestion = (qId) => {
-    if (questions.length > 1) setQuestions(questions.filter((q) => q.id !== qId));
+    if (questions.length > 1)
+      setQuestions(questions.filter((q) => q.id !== qId));
   };
 
   const updateQuestionText = (qId, text) =>
@@ -97,8 +111,8 @@ const CreatePoll = () => {
   const addOption = (qId) =>
     setQuestions(
       questions.map((q) =>
-        q.id === qId ? { ...q, options: [...q.options, { text: "" }] } : q
-      )
+        q.id === qId ? { ...q, options: [...q.options, { text: "" }] } : q,
+      ),
     );
 
   const removeOption = (qId, optIdx) =>
@@ -106,8 +120,8 @@ const CreatePoll = () => {
       questions.map((q) =>
         q.id === qId && q.options.length > 2
           ? { ...q, options: q.options.filter((_, i) => i !== optIdx) }
-          : q
-      )
+          : q,
+      ),
     );
 
   const updateOptionText = (qId, optIdx, text) =>
@@ -117,17 +131,21 @@ const CreatePoll = () => {
         const newOpts = [...q.options];
         newOpts[optIdx] = { text };
         return { ...q, options: newOpts };
-      })
+      }),
     );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitting) return;
 
+    const token = await getToken();
+
     const payload = {
       title: generalInfo.title.trim(),
       mode: generalInfo.mode,
-      expireAt: generalInfo.expireAt ? new Date(generalInfo.expireAt).toISOString() : null,
+      expireAt: generalInfo.expireAt
+        ? new Date(generalInfo.expireAt).toISOString()
+        : null,
       questions: questions.map((q, qIdx) => ({
         text: q.text.trim(),
         order: qIdx,
@@ -138,8 +156,8 @@ const CreatePoll = () => {
       })),
     };
 
-    if (payload.title.length < 2) {
-      toast.error("Title must be at least 2 characters");
+    if (payload.title.length < 3) {
+      toast.error("Title must be at least 3 characters");
       return;
     }
     if (!payload.expireAt) {
@@ -153,11 +171,14 @@ const CreatePoll = () => {
 
     try {
       setSubmitting(true);
-      await pollService.createPoll(payload);
+
+      await pollService.createPoll(payload, token);
       toast.success(isEditMode ? "Poll updated!" : "Poll created!");
       navigate("/polls");
     } catch (err) {
-      toast.error(err?.response?.data?.message || err.message || "Something went wrong");
+      toast.error(
+        err?.response?.data?.message || err.message || "Something went wrong",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -171,16 +192,20 @@ const CreatePoll = () => {
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <form onSubmit={handleSubmit}>
-        {/* Header */}
         <div className="mb-8">
           <Link
             to="/polls"
             className="group inline-flex items-center gap-2 text-sm mb-6 transition-colors"
             style={{ color: "rgba(255,255,255,0.4)" }}
-            onMouseEnter={(e) => e.currentTarget.style.color = "#c084fc"}
-            onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.4)"}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#c084fc")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "rgba(255,255,255,0.4)")
+            }
           >
-            <ArrowLeft size={15} className="transition-transform group-hover:-translate-x-1" />
+            <ArrowLeft
+              size={15}
+              className="transition-transform group-hover:-translate-x-1"
+            />
             My Polls
           </Link>
 
@@ -193,7 +218,8 @@ const CreatePoll = () => {
               <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                 style={{
-                  background: "linear-gradient(135deg, rgba(168,85,247,0.2), rgba(99,102,241,0.15))",
+                  background:
+                    "linear-gradient(135deg, rgba(168,85,247,0.2), rgba(99,102,241,0.15))",
                   border: "1px solid rgba(168,85,247,0.3)",
                 }}
               >
@@ -212,7 +238,6 @@ const CreatePoll = () => {
         </div>
 
         <div className="space-y-5 max-w-3xl">
-          {/* General Info Section */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -223,7 +248,10 @@ const CreatePoll = () => {
               border: "1px solid rgba(255,255,255,0.07)",
             }}
           >
-            <h2 className="text-sm font-bold uppercase tracking-widest mb-5" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <h2
+              className="text-sm font-bold uppercase tracking-widest mb-5"
+              style={{ color: "rgba(255,255,255,0.3)" }}
+            >
               General
             </h2>
             <div className="space-y-5">
@@ -251,15 +279,27 @@ const CreatePoll = () => {
                       name="mode"
                       value={generalInfo.mode}
                       onChange={handleGeneralChange}
-                      style={{ ...FIELD_STYLE, appearance: "none", paddingRight: "40px", cursor: "pointer" }}
+                      style={{
+                        ...FIELD_STYLE,
+                        appearance: "none",
+                        paddingRight: "40px",
+                        cursor: "pointer",
+                      }}
                       onFocus={(e) => Object.assign(e.target.style, focusStyle)}
                       onBlur={(e) => {
                         e.target.style.borderColor = "rgba(255,255,255,0.08)";
                         e.target.style.boxShadow = "none";
                       }}
                     >
-                      <option value="anonymous" style={{ background: "#0e0e1a" }}>Anonymous — Link only</option>
-                      <option value="auth" style={{ background: "#0e0e1a" }}>Authenticated — Login required</option>
+                      <option
+                        value="anonymous"
+                        style={{ background: "#0e0e1a" }}
+                      >
+                        Anonymous — Link only
+                      </option>
+                      <option value="auth" style={{ background: "#0e0e1a" }}>
+                        Authenticated — Login required
+                      </option>
                     </select>
                     <ChevronDown
                       size={15}
@@ -288,7 +328,6 @@ const CreatePoll = () => {
             </div>
           </motion.section>
 
-          {/* Questions */}
           <div className="space-y-4">
             <AnimatePresence>
               {questions.map((question, qIdx) => (
@@ -304,20 +343,24 @@ const CreatePoll = () => {
                     border: "1px solid rgba(255,255,255,0.07)",
                   }}
                 >
-                  {/* Delete question button */}
                   {questions.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeQuestion(question.id)}
                       className="absolute top-5 right-5 p-2 rounded-xl transition-all"
-                      style={{ color: "rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.04)" }}
+                      style={{
+                        color: "rgba(255,255,255,0.3)",
+                        background: "rgba(255,255,255,0.04)",
+                      }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.color = "#f87171";
-                        e.currentTarget.style.background = "rgba(239,68,68,0.1)";
+                        e.currentTarget.style.background =
+                          "rgba(239,68,68,0.1)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.color = "rgba(255,255,255,0.3)";
-                        e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                        e.currentTarget.style.background =
+                          "rgba(255,255,255,0.04)";
                       }}
                     >
                       <Trash2 size={15} />
@@ -325,7 +368,6 @@ const CreatePoll = () => {
                   )}
 
                   <div className="space-y-5 pr-10">
-                    {/* Question Header */}
                     <div className="flex items-center gap-2">
                       <span
                         className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
@@ -337,7 +379,10 @@ const CreatePoll = () => {
                       >
                         {qIdx + 1}
                       </span>
-                      <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      <span
+                        className="text-sm font-bold uppercase tracking-widest"
+                        style={{ color: "rgba(255,255,255,0.3)" }}
+                      >
                         Question
                       </span>
                     </div>
@@ -346,7 +391,9 @@ const CreatePoll = () => {
                       required
                       type="text"
                       value={question.text}
-                      onChange={(e) => updateQuestionText(question.id, e.target.value)}
+                      onChange={(e) =>
+                        updateQuestionText(question.id, e.target.value)
+                      }
                       placeholder="Enter your question"
                       style={FIELD_STYLE}
                       onFocus={(e) => Object.assign(e.target.style, focusStyle)}
@@ -356,9 +403,11 @@ const CreatePoll = () => {
                       }}
                     />
 
-                    {/* Options */}
                     <div className="space-y-3">
-                      <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      <label
+                        className="text-xs font-bold uppercase tracking-widest"
+                        style={{ color: "rgba(255,255,255,0.3)" }}
+                      >
                         Options
                       </label>
                       <AnimatePresence>
@@ -385,12 +434,21 @@ const CreatePoll = () => {
                               required
                               type="text"
                               value={opt.text}
-                              onChange={(e) => updateOptionText(question.id, oIdx, e.target.value)}
+                              onChange={(e) =>
+                                updateOptionText(
+                                  question.id,
+                                  oIdx,
+                                  e.target.value,
+                                )
+                              }
                               placeholder={`Option ${oIdx + 1}`}
                               style={{ ...FIELD_STYLE, flex: 1 }}
-                              onFocus={(e) => Object.assign(e.target.style, focusStyle)}
+                              onFocus={(e) =>
+                                Object.assign(e.target.style, focusStyle)
+                              }
                               onBlur={(e) => {
-                                e.target.style.borderColor = "rgba(255,255,255,0.08)";
+                                e.target.style.borderColor =
+                                  "rgba(255,255,255,0.08)";
                                 e.target.style.boxShadow = "none";
                               }}
                             />
@@ -399,14 +457,20 @@ const CreatePoll = () => {
                                 type="button"
                                 onClick={() => removeOption(question.id, oIdx)}
                                 className="w-12 h-12 rounded-xl flex items-center justify-center transition-all shrink-0"
-                                style={{ color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.03)" }}
+                                style={{
+                                  color: "rgba(255,255,255,0.25)",
+                                  background: "rgba(255,255,255,0.03)",
+                                }}
                                 onMouseEnter={(e) => {
                                   e.currentTarget.style.color = "#f87171";
-                                  e.currentTarget.style.background = "rgba(239,68,68,0.08)";
+                                  e.currentTarget.style.background =
+                                    "rgba(239,68,68,0.08)";
                                 }}
                                 onMouseLeave={(e) => {
-                                  e.currentTarget.style.color = "rgba(255,255,255,0.25)";
-                                  e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                                  e.currentTarget.style.color =
+                                    "rgba(255,255,255,0.25)";
+                                  e.currentTarget.style.background =
+                                    "rgba(255,255,255,0.03)";
                                 }}
                               >
                                 <Trash2 size={14} />
@@ -420,8 +484,12 @@ const CreatePoll = () => {
                         onClick={() => addOption(question.id)}
                         className="inline-flex items-center gap-1.5 text-xs font-semibold mt-1 transition-colors"
                         style={{ color: "rgba(168,85,247,0.7)" }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = "#c084fc"}
-                        onMouseLeave={(e) => e.currentTarget.style.color = "rgba(168,85,247,0.7)"}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.color = "#c084fc")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.color = "rgba(168,85,247,0.7)")
+                        }
                       >
                         <Plus size={13} />
                         Add option
@@ -432,7 +500,6 @@ const CreatePoll = () => {
               ))}
             </AnimatePresence>
 
-            {/* Add Question */}
             <motion.button
               type="button"
               onClick={addQuestion}
@@ -460,7 +527,6 @@ const CreatePoll = () => {
             </motion.button>
           </div>
 
-          {/* Footer Actions */}
           <div
             className="flex justify-between items-center pt-5 mt-2"
             style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
@@ -469,8 +535,12 @@ const CreatePoll = () => {
               to="/polls"
               className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors"
               style={{ color: "rgba(255,255,255,0.4)" }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.7)"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.4)"}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.color = "rgba(255,255,255,0.7)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.color = "rgba(255,255,255,0.4)")
+              }
             >
               Cancel
             </Link>
@@ -483,7 +553,11 @@ const CreatePoll = () => {
                 boxShadow: "0 0 24px rgba(168,85,247,0.35)",
               }}
             >
-              {submitting ? "Publishing…" : isEditMode ? "Update Poll" : "Publish Poll"}
+              {submitting
+                ? "Publishing…"
+                : isEditMode
+                  ? "Update Poll"
+                  : "Publish Poll"}
             </button>
           </div>
         </div>

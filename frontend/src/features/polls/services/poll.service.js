@@ -1,12 +1,8 @@
 import { getAnonymousId } from "./anonymous.js";
 import { api } from "../../../shared/lib/api.js";
-import { useAuth } from "@clerk/clerk-react";
-
-const { getToken } = useAuth();
 
 export const pollService = {
-  async createPoll({ title, mode, expireAt, questions }) {
-    const token = getToken();
+  async createPoll({ title, mode, expireAt, questions }, token) {
     const { data } = await api.post(
       "/poll",
       {
@@ -16,6 +12,7 @@ export const pollService = {
         questions,
       },
       {
+        withCredentials: true,
         headers: {
           Authorization: `Bearer ${token}`,
         },

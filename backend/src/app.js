@@ -8,6 +8,7 @@ import { clerkMiddleware } from "@clerk/express";
 
 const app = express();
 
+app.use(clerkMiddleware());
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -17,7 +18,6 @@ app.use(
   }),
 );
 
-app.use(clerkMiddleware());
 
 app.get("/", (req, res) => console.log("Hello from Server"));
 

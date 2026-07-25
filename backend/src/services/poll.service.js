@@ -44,13 +44,19 @@ async function getUniqueSlug(title) {
   return `${base}-${counter}`;
 }
 
-const createPoll = async ({ title, mode, expireAt, questions }, userId) => {
+async function getUser(userId) {
   const user = await User.findOne({ clerkUserId: userId });
 
   if (!user) {
     throw ApiError.notfound("User not found");
   }
 
+  return user;
+}
+
+const createPoll = async ({ title, mode, expireAt, questions }, userId) => {
+
+  const user = await getUser(userId);
   const slug = await getUniqueSlug(title);
 
   const session = await mongoose.startSession();
@@ -59,16 +65,19 @@ const createPoll = async ({ title, mode, expireAt, questions }, userId) => {
     let poll;
 
     await session.withTransaction(async () => {
-      poll = await Poll.create(
-        {
-          title,
-          mode,
-          expireAt,
-          slug,
-          creatorId: userId,
-        },
+      const createdPolls = await Poll.create(
+        [
+          {
+            title,
+            mode,
+            expireAt,
+            slug,
+            creatorId: user._id,
+          },
+        ],
         { session },
       );
+      poll = createdPolls[0];
 
       const createdQuestions = await Question.insertMany(
         questions.map((q, index) => ({
@@ -97,7 +106,9 @@ const createPoll = async ({ title, mode, expireAt, questions }, userId) => {
 };
 
 const fetchAllPolls = async (userId) => {
-  const polls = await Poll.find({ creatorId: userId }).lean();
+  const user = await getUser();
+
+  const polls = await Poll.find({ creatorId: user._id }).lean();
 
   const pollsWithStats = await Promise.all(
     polls.map(async (poll) => {
