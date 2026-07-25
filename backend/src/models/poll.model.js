@@ -14,9 +14,10 @@ const pollSchema = new mongoose.Schema(
       enum: ["auth", "anonymous"],
       default: "auth",
     },
-    shareToken: {
+    slug: {
       type: String,
       required: true,
+      unique: true,
     },
     expireAt: {
       type: Date,

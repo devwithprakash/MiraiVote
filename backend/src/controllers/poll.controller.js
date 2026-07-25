@@ -1,8 +1,10 @@
+import { getAuth } from "@clerk/express";
 import * as service from "../services/poll.service.js";
 import ApiResponse from "../utils/api-response.js";
 
 const createPoll = async (req, res) => {
-  const result = await service.createPoll(req.body, req.userId);
+  const { userId } = getAuth(req);
+  const result = await service.createPoll(req.body, userId);
 
   ApiResponse.created(res, "Poll created successfully", result);
 };
@@ -42,10 +44,10 @@ const pollResult = async (req, res) => {
   ApiResponse.ok(res, "Poll result", result);
 };
 
-const deletePoll = async(req, res)=>{
-  const result = await service.deletePoll(req.params.id)
-  ApiResponse.ok(res, "Poll deleted successfully", result)
-}
+const deletePoll = async (req, res) => {
+  const result = await service.deletePoll(req.params.id);
+  ApiResponse.ok(res, "Poll deleted successfully", result);
+};
 
 export {
   createPoll,
@@ -54,5 +56,5 @@ export {
   pollResult,
   fetchAllPolls,
   fetchAnalytics,
-  deletePoll
+  deletePoll,
 };

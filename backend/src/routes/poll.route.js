@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { validate } from "../middleware/validate.middleware.js";
-import { pollSchema } from "../schemas/poll.schema.js";
+import { createPollSchema } from "../schemas/poll.schema.js";
 import * as controller from "../controllers/poll.controller.js";
 import { requireAuth } from "@clerk/express";
 
 const router = Router();
 
-router.post("/", requireAuth(), validate(pollSchema), controller.createPoll);
+router.post("/", requireAuth(), validate(createPollSchema), controller.createPoll);
+
+
 router.get("/analytics/:pollId", requireAuth(), controller.fetchAnalytics);
 router.get("/", requireAuth(), controller.fetchAllPolls);
 router.get("/:id", requireAuth(), controller.fetchPoll);

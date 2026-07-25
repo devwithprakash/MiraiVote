@@ -10,48 +10,90 @@ import { Answer } from "../models/answer.model.js";
 import { User } from "../models/user.model.js";
 import { io } from "../../server.js";
 
-function generateShareToken() {
-  return crypto.randomBytes(24).toString("base64url");
+function generateSlug(title) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]/g, "");
+}
+
+async function getUniqueSlug(title) {
+  const base = generateSlug(title);
+
+  const existing = await Poll.find(
+    { slug: { $regex: `${base}` } },
+    {
+      slug: 1,
+      _id: 0,
+    },
+  );
+
+  if (existing.length === 0) return base;
+
+  const existingSet = new Set(existing.map((r) => r.slug));
+
+  if (!existingSet.has(base)) return base;
+
+  let counter = 1;
+
+  while (existingSet.has(`${base}-${counter}`)) {
+    counter++;
+  }
+
+  return `${base}-${counter}`;
 }
 
 const createPoll = async ({ title, mode, expireAt, questions }, userId) => {
-  const user = await User.findById(userId);
+  const user = await User.findOne({ clerkUserId: userId });
 
   if (!user) {
     throw ApiError.notfound("User not found");
   }
 
-  if (!user.isVerified) {
-    throw ApiError.badRequest("User email is not verified");
+  const slug = await getUniqueSlug(title);
+
+  const session = await mongoose.startSession();
+
+  try {
+    let poll;
+
+    await session.withTransaction(async () => {
+      poll = await Poll.create(
+        {
+          title,
+          mode,
+          expireAt,
+          slug,
+          creatorId: userId,
+        },
+        { session },
+      );
+
+      const createdQuestions = await Question.insertMany(
+        questions.map((q, index) => ({
+          text: q.text,
+          order: index,
+          pollId: poll._id,
+        })),
+        { session },
+      );
+
+      const optionsData = questions.flatMap((q, questionIndex) =>
+        q.options.map((option, optionIndex) => ({
+          text: option.text,
+          order: optionIndex,
+          questionId: createdQuestions[questionIndex]._id,
+        })),
+      );
+
+      await Option.insertMany(optionsData, { session });
+    });
+
+    return poll;
+  } finally {
+    await session.endSession();
   }
-
-  const poll = await Poll.create({
-    title,
-    mode,
-    expireAt,
-    shareToken: generateShareToken(),
-    creatorId: userId,
-  });
-
-  const createdQuestions = await Question.insertMany(
-    questions.map((q) => ({
-      text: q.text,
-      order: q.order,
-      pollId: poll._id,
-    })),
-  );
-
-  const optionsData = questions.flatMap((q, i) =>
-    q.options.map((opt) => ({
-      text: opt.text,
-      order: opt.order,
-      questionId: createdQuestions[i]._id,
-    })),
-  );
-
-  await Option.insertMany(optionsData);
-
-  return poll;
 };
 
 const fetchAllPolls = async (userId) => {
