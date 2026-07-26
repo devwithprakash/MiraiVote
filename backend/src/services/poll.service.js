@@ -141,11 +141,9 @@ const fetchPoll = async (pollId, userId) => {
             return {
               ...option.toObject(),
 
-              ...(isExpired && {
-                votes,
-                percentage:
-                  totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0,
-              }),
+              votes,
+              percentage:
+                totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0,
             };
           }),
         );
@@ -154,10 +152,6 @@ const fetchPoll = async (pollId, userId) => {
           ...question.toObject(),
 
           options: optionsMapped,
-
-          ...(isExpired && {
-            totalVotes,
-          }),
         };
       }),
     );
@@ -294,14 +288,9 @@ const fetchAnalytics = async (pollId, days, userId) => {
       },
     ]);
 
-    const [totalParticipants, lastParticipant, totalQuestions, responsesToday] =
+    const [totalParticipants, totalQuestions, responsesToday] =
       await Promise.all([
         Participant.countDocuments({ pollId }),
-
-        Participant.findOne({ pollId })
-          .sort({ submittedAt: -1 })
-          .select("submittedAt")
-          .lean(),
 
         Question.find({ pollId }),
 
@@ -311,10 +300,20 @@ const fetchAnalytics = async (pollId, days, userId) => {
         }),
       ]);
 
+    const now = new Date();
+    const createdAt = new Date(poll.createdAt);
+
+    const daysActive = Math.max(
+      1,
+      Math.ceil((now - createdAt) / (1000 * 60 * 60 * 24)),
+    );
+
+    const avgPerDay = (totalParticipants / daysActive).toFixed(1);
+
     const result = {
       rows,
       totalParticipants,
-      lastParticipant,
+      avgPerDay,
       responsesToday,
       totalQuestions: totalQuestions.length ?? 0,
     };

@@ -9,6 +9,10 @@ import {
   Activity,
   TrendingUp,
   ListChecks,
+  Clock3,
+  ActivityIcon,
+  CalendarDays,
+  BadgeCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -193,7 +197,6 @@ const PollAnalytics = () => {
   const [selectedDays, setSelectedDays] = useState(7);
   const { getToken } = useAuth();
 
-
   useEffect(() => {
     const load = async () => {
       const token = await getToken();
@@ -225,6 +228,8 @@ const PollAnalytics = () => {
   const engagementData = analytics?.engagementData || [];
   const timelineData = analytics?.timelineData || [];
   const questions = poll?.questions || [];
+
+  console.log(analytics?.stats?.totalParticipants);
 
   return (
     <div className="space-y-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -290,37 +295,30 @@ const PollAnalytics = () => {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
               index={0}
-              icon={BarChart3}
-              label="Total Votes"
-              value={analytics?.stats?.totalVotes ?? 0}
+              icon={Users}
+              label="Participants"
+              value={analytics?.totalParticipants ?? 0}
               accent="#a855f7"
             />
             <StatCard
               index={1}
-              icon={Users}
-              label="Participants"
-              value={analytics?.stats?.totalParticipants ?? 0}
+              icon={ListChecks}
+              label="Questions"
+              value={analytics?.totalQuestions ?? 0}
               accent="#6366f1"
             />
             <StatCard
               index={2}
-              icon={ListChecks}
-              label="Questions"
-              value={analytics?.stats?.totalQuestions ?? 0}
+              icon={CalendarDays}
+              label="Today"
+              value={analytics?.responsesToday ?? 0}
               accent="#ec4899"
             />
             <StatCard
               index={3}
               icon={TrendingUp}
-              label="Avg per Question"
-              value={
-                analytics?.stats?.totalQuestions > 0
-                  ? Math.round(
-                      (analytics?.stats?.totalVotes || 0) /
-                        analytics?.stats?.totalQuestions,
-                    )
-                  : 0
-              }
+              label="Avg / Day"
+              value={analytics?.avgPerDay ?? "-"}
               accent="#8b5cf6"
             />
           </div>
