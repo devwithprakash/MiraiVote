@@ -59,11 +59,6 @@ const submitPoll = async (req, res) => {
   ApiResponse.ok(res, "Poll submitted successfully", result);
 };
 
-const pollResult = async (req, res) => {
-  const result = await service.pollResult(req.params.token, req.userId);
-
-  ApiResponse.ok(res, "Poll result", result);
-};
 
 const deletePoll = async (req, res) => {
   const { userId } = getAuth(req);
@@ -75,7 +70,6 @@ export {
   createPoll,
   fetchPoll,
   submitPoll,
-  pollResult,
   fetchAllPolls,
   fetchAnalytics,
   deletePoll,

@@ -327,12 +327,14 @@ const fetchAnalytics = async (pollId, days, userId) => {
 
 const fetchPollBySlug = async (slug, userId) => {
   try {
-    const user = await getUser(userId);
-
     const poll = await Poll.findOne({ slug });
 
     if (!poll) {
       throw ApiError.notfound("Poll not found");
+    }
+
+    if (poll.mode === "auth" && !userId) {
+      throw ApiError.forbidden("First login to submit poll");
     }
 
     const isExpired = poll.expireAt && new Date() > new Date(poll.expireAt);
@@ -374,14 +376,12 @@ const fetchPollBySlug = async (slug, userId) => {
 
           options: optionsMapped,
 
-          ...(isExpired && {
+          ...(!isExpired && {
             totalVotes,
           }),
         };
       }),
     );
-
-    console.log("Question with options", questionsWithOptions);
 
     const people = await Participant.countDocuments({
       pollId: poll._id,
@@ -408,7 +408,7 @@ const fetchPollBySlug = async (slug, userId) => {
 
 // Remaining services
 
-const submitPoll = async (slug, pollInfo, anonymousId, userId) => {
+const submitPoll = async (slug, pollInfo, anonymousId, userId) => { 
   const user = await getUser(userId);
   const session = await mongoose.startSession();
 
@@ -426,7 +426,7 @@ const submitPoll = async (slug, pollInfo, anonymousId, userId) => {
     }
 
     if (poll.mode === "auth" && !userId) {
-      throw ApiError.unauthorized("First login to submit poll");
+      throw ApiError.forbidden("First login to submit poll");
     }
 
     if (poll.mode === "anonymous" && !anonymousId) {
@@ -598,86 +598,11 @@ const submitPoll = async (slug, pollInfo, anonymousId, userId) => {
   }
 };
 
-const pollResult = async (shareToken, userId) => {
-  const poll = await Poll.findOne({ shareToken });
-
-  if (!poll) {
-    throw ApiError.notfound("Poll not found");
-  }
-
-  if (poll.mode === "auth" && !userId) {
-    throw ApiError.unauthorized("First login to see result");
-  }
-
-  const questions = await Question.find({
-    pollId: poll._id,
-  });
-
-  const options = await Option.find({
-    questionId: {
-      $in: questions.map((q) => q._id),
-    },
-  });
-
-  const answers = await Answer.aggregate([
-    {
-      $match: {
-        questionId: {
-          $in: questions.map((q) => q._id),
-        },
-      },
-    },
-    {
-      $group: {
-        _id: "$optionId",
-        totalVotes: {
-          $sum: 1,
-        },
-      },
-    },
-  ]);
-
-  const totalParticipants = await Participant.countDocuments({
-    pollId: poll._id,
-  });
-
-  const voteMap = new Map();
-
-  answers.forEach((a) => {
-    voteMap.set(a._id.toString(), a.totalVotes);
-  });
-
-  const formattedQuestions = questions.map((question) => {
-    const questionOptions = options
-      .filter(
-        (option) => option.questionId.toString() === question._id.toString(),
-      )
-      .map((option) => ({
-        optionId: option._id,
-        text: option.text,
-        votes: voteMap.get(option._id.toString()) || 0,
-      }));
-
-    return {
-      questionId: question._id,
-      title: question.title,
-      options: questionOptions,
-    };
-  });
-
-  return {
-    pollId: poll._id,
-    title: poll.title,
-    totalParticipants,
-    questions: formattedQuestions,
-  };
-};
 
 export {
   createPoll,
   fetchPoll,
   submitPoll,
-  pollResult,
   fetchAllPolls,
   fetchAnalytics,
   deletePoll,

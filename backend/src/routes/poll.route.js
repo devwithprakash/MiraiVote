@@ -11,12 +11,8 @@ router.patch("/:pollId", validate(updatePollSchema), controller.updatePoll);
 router.get("/:id", controller.fetchPoll);
 router.delete("/:id", controller.deletePoll);
 
-
 router.get("/:pollId/analytics", controller.fetchAnalytics);
 router.get("/public/:slug", controller.fetchPollBySlug);
 router.post("/:slug/submit", controller.submitPoll);
-
-// remaining routes
-router.get("/:token/result", controller.pollResult);
 
 export default router;

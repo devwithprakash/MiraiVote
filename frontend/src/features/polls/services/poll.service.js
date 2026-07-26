@@ -101,12 +101,6 @@ export const pollService = {
     return data;
   },
 
-  async pollResult(shareToken) {
-    const { data } = await api.get(`/poll/${shareToken}/result`);
-
-    return data;
-  },
-
   async deletePoll(pollId, token) {
     const { data } = await api.delete(`/poll/${pollId}`, {
       headers: {
