@@ -408,7 +408,7 @@ const fetchPollBySlug = async (slug, userId) => {
 
 // Remaining services
 
-const submitPoll = async (slug, pollInfo, anonymousId, userId) => { 
+const submitPoll = async (slug, pollInfo, anonymousId, userId) => {
   const user = await getUser(userId);
   const session = await mongoose.startSession();
 
@@ -597,7 +597,6 @@ const submitPoll = async (slug, pollInfo, anonymousId, userId) => {
     session.endSession();
   }
 };
-
 
 export {
   createPoll,

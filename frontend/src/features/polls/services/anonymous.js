@@ -1,14 +1,15 @@
 export const getAnonymousId = () => {
-  let anonymousId = localStorage.getItem("anonymousId");
+  const match = document.cookie.match(/(?:^|;\s*)anonymousId=([^;]+)/);
 
-  if (!anonymousId) {
-    anonymousId = crypto.randomUUID();
-
-    localStorage.setItem(
-      "anonymousId",
-      anonymousId
-    );
+  if (match) {
+    return decodeURIComponent(match[1]);
   }
+
+  const anonymousId = crypto.randomUUID();
+
+  document.cookie = `anonymousId=${encodeURIComponent(
+    anonymousId,
+  )}; Path=/; SameSite=Lax`;
 
   return anonymousId;
 };
