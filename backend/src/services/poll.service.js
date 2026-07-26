@@ -269,6 +269,7 @@ const fetchAnalytics = async (pollId, days, userId) => {
             $dateToString: {
               format: "%Y-%m-%d",
               date: "$submittedAt",
+              timezone: "Asia/Kolkata",
             },
           },
           count: { $sum: 1 },
@@ -287,6 +288,23 @@ const fetchAnalytics = async (pollId, days, userId) => {
         },
       },
     ]);
+
+    const countMap = new Map(rows.map((row) => [row.date, row.count]));
+
+    const timeline = [];
+
+    for (
+      let d = new Date(startDate);
+      d <= new Date();
+      d.setDate(d.getDate() + 1)
+    ) {
+      const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+      timeline.push({
+        date,
+        count: countMap.get(date) ?? 0,
+      });
+    }
 
     const [totalParticipants, totalQuestions, responsesToday] =
       await Promise.all([
@@ -311,7 +329,7 @@ const fetchAnalytics = async (pollId, days, userId) => {
     const avgPerDay = (totalParticipants / daysActive).toFixed(1);
 
     const result = {
-      rows,
+      timeline,
       totalParticipants,
       avgPerDay,
       responsesToday,

@@ -147,10 +147,7 @@ const PerQuestionBar = ({ question, index }) => {
       </div>
       <div className="space-y-3">
         {question.options?.map((option, oIdx) => {
-          const pct =
-            question.totalVotes > 0
-              ? Math.round(((option.votes || 0) / question.totalVotes) * 100)
-              : 0;
+          const pct = option.percentage || 0;
           const color = CHART_COLORS[oIdx % CHART_COLORS.length];
           return (
             <div key={option._id || oIdx} className="space-y-1.5">
@@ -226,7 +223,13 @@ const PollAnalytics = () => {
   ];
 
   const engagementData = analytics?.engagementData || [];
-  const timelineData = analytics?.timelineData || [];
+  const timelineData = analytics?.timeline.map((item) => ({
+    name: new Date(item.date).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+    }),
+    votes: item.count,
+  }));
   const questions = poll?.questions || [];
 
   console.log(analytics?.stats?.totalParticipants);
@@ -324,7 +327,7 @@ const PollAnalytics = () => {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 gap-5">
             {/* Area Chart */}
             <ChartCard
               index={4}
@@ -379,94 +382,6 @@ const PollAnalytics = () => {
                 </ResponsiveContainer>
               </div>
             </ChartCard>
-
-            {/* Pie Chart */}
-            <ChartCard
-              index={5}
-              title="Participation Ratio"
-              subtitle="Votes vs unique participants"
-            >
-              <div className="h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      outerRadius={90}
-                      innerRadius={48}
-                      paddingAngle={3}
-                    >
-                      {pieData.map((_, i) => (
-                        <Cell key={i} fill={CHART_COLORS[i]} />
-                      ))}
-                    </Pie>
-                    <Tooltip {...TOOLTIP_STYLE} />
-                    <Legend
-                      iconType="circle"
-                      iconSize={8}
-                      wrapperStyle={{
-                        fontSize: "12px",
-                        color: "rgba(255,255,255,0.5)",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </ChartCard>
-
-            {/* Bar Chart */}
-            {engagementData.length > 0 && (
-              <ChartCard
-                index={6}
-                title="Poll Engagement"
-                subtitle="Votes vs participants comparison"
-                span={2}
-              >
-                <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={engagementData} barGap={4}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="rgba(255,255,255,0.05)"
-                        vertical={false}
-                      />
-                      <XAxis
-                        dataKey="name"
-                        stroke="rgba(255,255,255,0.2)"
-                        tickLine={false}
-                        axisLine={false}
-                        style={{ fontSize: "11px" }}
-                      />
-                      <YAxis
-                        stroke="rgba(255,255,255,0.2)"
-                        tickLine={false}
-                        axisLine={false}
-                        style={{ fontSize: "11px" }}
-                      />
-                      <Tooltip {...TOOLTIP_STYLE} />
-                      <Legend
-                        iconType="circle"
-                        iconSize={8}
-                        wrapperStyle={{
-                          fontSize: "12px",
-                          color: "rgba(255,255,255,0.5)",
-                        }}
-                      />
-                      <Bar
-                        dataKey="votes"
-                        fill="#a855f7"
-                        radius={[6, 6, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="participants"
-                        fill="#6366f1"
-                        radius={[6, 6, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </ChartCard>
-            )}
           </div>
 
           {/* Per-Question Breakdown */}

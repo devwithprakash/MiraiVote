@@ -57,7 +57,7 @@ const PollDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const { getToken } = useAuth();
+  const {getToken} = useAuth()
 
   const pollUrl = `${window.location.origin}/public/${poll?.slug}`;
 
@@ -76,7 +76,7 @@ const PollDetail = () => {
     const fetchPoll = async () => {
       try {
         setLoading(true);
-        const token = await getToken();
+        const token = await getToken()
         const response = await pollService.fetchPoll(id, token);
         setPoll(response.data);
       } catch {
