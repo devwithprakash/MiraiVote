@@ -10,6 +10,8 @@ import { Answer } from "../models/answer.model.js";
 import { User } from "../models/user.model.js";
 import { io } from "../../server.js";
 
+const MAX_RANGE_DAYS = 365;
+
 function generateSlug(title) {
   return title
     .toLowerCase()
@@ -243,11 +245,87 @@ const deletePoll = async (pollId, userId) => {
   await Poll.findByIdAndDelete(pollId);
 };
 
-// Remaining services
+const fetchAnalytics = async (pollId, days, userId) => {
+  try {
+    const user = await getUser(userId);
 
-const fetchAnalytics = async (userId, pollId) => {
-  const user = await getUser(userId);
+    const poll = await Poll.findOne({ _id: pollId, creatorId: user._id });
+
+    if (!poll) {
+      throw ApiError.notfound("Form not found");
+    }
+
+    const safeDays = Math.min(Math.max(1, Math.floor(days)), MAX_RANGE_DAYS);
+
+    const startDate = new Date();
+
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - (safeDays - 1));
+
+    const rows = await Participant.aggregate([
+      {
+        $match: {
+          pollId: new mongoose.Types.ObjectId(pollId),
+          submittedAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$submittedAt",
+            },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          count: 1,
+        },
+      },
+      {
+        $sort: {
+          date: 1,
+        },
+      },
+    ]);
+
+    const [totalParticipants, lastParticipant, totalQuestions, responsesToday] =
+      await Promise.all([
+        Participant.countDocuments({ pollId }),
+
+        Participant.findOne({ pollId })
+          .sort({ submittedAt: -1 })
+          .select("submittedAt")
+          .lean(),
+
+        Question.find({ pollId }),
+
+        Participant.countDocuments({
+          pollId,
+          submittedAt: { $gte: startDate },
+        }),
+      ]);
+
+    const result = {
+      rows,
+      totalParticipants,
+      lastParticipant,
+      responsesToday,
+      totalQuestions: totalQuestions.length ?? 0,
+    };
+
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
 };
+
+// Remaining services
 
 const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
   const session = await mongoose.startSession();
@@ -510,6 +588,85 @@ const pollResult = async (shareToken, userId) => {
     totalParticipants,
     questions: formattedQuestions,
   };
+};
+
+const fetchPollBySlug = async (slug, userId) => {
+  try {
+    const user = await getUser(userId);
+
+    const poll = await Poll.findOne({ slug });
+
+    if (!poll) {
+      throw ApiError.notfound("Poll not found");
+    }
+
+    const isExpired = poll.expireAt && new Date() > new Date(poll.expireAt);
+
+    const questions = await Question.find({
+      pollId: poll._id,
+    });
+
+    const questionsWithOptions = await Promise.all(
+      questions.map(async (question) => {
+        const options = await Option.find({
+          questionId: question._id,
+        });
+
+        const totalVotes = await Answer.countDocuments({
+          questionId: question._id,
+        });
+
+        const optionsMapped = await Promise.all(
+          options.map(async (option) => {
+            const votes = await Answer.countDocuments({
+              optionId: option._id,
+            });
+
+            return {
+              ...option.toObject(),
+
+              ...(isExpired && {
+                votes,
+                percentage:
+                  totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0,
+              }),
+            };
+          }),
+        );
+
+        return {
+          ...question.toObject(),
+
+          options: optionsMapped,
+
+          ...(isExpired && {
+            totalVotes,
+          }),
+        };
+      }),
+    );
+
+    const people = await Participant.countDocuments({
+      pollId: poll._id,
+    });
+
+    const votes = await Answer.countDocuments({
+      pollId: poll._id,
+    });
+
+    return {
+      ...poll.toObject(),
+
+      isExpired,
+
+      questions: questionsWithOptions,
+
+      people,
+      votes,
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
 };
 
 export {

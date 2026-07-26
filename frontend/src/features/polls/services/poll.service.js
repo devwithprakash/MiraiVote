@@ -55,8 +55,12 @@ export const pollService = {
     return data;
   },
 
-  async fetchAnalytics(pollId) {
-    const { data } = await api.get(`/poll/analytics/${pollId}`);
+  async fetchAnalytics(pollId, days, token) {
+    const { data } = await api.get(`/poll/${pollId}/analytics?days=${days}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     return data;
   },

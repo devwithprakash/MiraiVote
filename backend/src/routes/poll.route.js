@@ -13,7 +13,7 @@ router.get("/:pollId/analytics", controller.fetchAnalytics);
 router.delete("/:id", controller.deletePoll);
 
 // remaining routes
-router.get("/public/:id", controller.fetchPoll);
+router.get("/public/:slug", controller.fetchPoll);
 router.post("/:id/submit", controller.submitPoll);
 router.get("/:token/result", controller.pollResult);
 

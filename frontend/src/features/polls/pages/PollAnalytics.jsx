@@ -27,6 +27,7 @@ import {
 } from "recharts";
 import { pollService } from "../services/poll.service.js";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -69,7 +70,10 @@ const StatCard = ({ icon: Icon, label, value, accent, index }) => (
     />
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+        <p
+          className="text-[10px] font-bold uppercase tracking-widest mb-2.5"
+          style={{ color: "rgba(255,255,255,0.3)" }}
+        >
           {label}
         </p>
         <p className="text-3xl font-bold text-white">{value ?? "—"}</p>
@@ -139,14 +143,17 @@ const PerQuestionBar = ({ question, index }) => {
       </div>
       <div className="space-y-3">
         {question.options?.map((option, oIdx) => {
-          const pct = question.totalVotes > 0
-            ? Math.round(((option.votes || 0) / question.totalVotes) * 100)
-            : 0;
+          const pct =
+            question.totalVotes > 0
+              ? Math.round(((option.votes || 0) / question.totalVotes) * 100)
+              : 0;
           const color = CHART_COLORS[oIdx % CHART_COLORS.length];
           return (
             <div key={option._id || oIdx} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: "rgba(255,255,255,0.65)" }}>{option.text}</span>
+                <span style={{ color: "rgba(255,255,255,0.65)" }}>
+                  {option.text}
+                </span>
                 <span className="font-semibold" style={{ color }}>
                   {option.votes ?? 0} · {pct}%
                 </span>
@@ -158,9 +165,15 @@ const PerQuestionBar = ({ question, index }) => {
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
-                  transition={{ duration: 0.8, delay: oIdx * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    duration: 0.8,
+                    delay: oIdx * 0.1,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                   className="h-full rounded-full"
-                  style={{ background: `linear-gradient(90deg, ${color}, ${color}99)` }}
+                  style={{
+                    background: `linear-gradient(90deg, ${color}, ${color}99)`,
+                  }}
                 />
               </div>
             </div>
@@ -177,15 +190,22 @@ const PollAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [poll, setPoll] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedDays, setSelectedDays] = useState(7);
+  const { getToken } = useAuth();
+
 
   useEffect(() => {
     const load = async () => {
+      const token = await getToken();
       try {
         setLoading(true);
         const [analyticsRes, pollRes] = await Promise.all([
-          pollService.fetchAnalytics(id),
-          pollService.fetchPoll(id),
+          pollService.fetchAnalytics(id, selectedDays, token),
+          pollService.fetchPoll(id, token),
         ]);
+
+        console.log("Analytics Data", analyticsRes.data);
+        console.log("Poll Data", pollRes.data);
         setAnalytics(analyticsRes.data);
         setPoll(pollRes.data);
       } catch (err) {
@@ -208,16 +228,20 @@ const PollAnalytics = () => {
 
   return (
     <div className="space-y-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      {/* Header */}
       <div>
         <button
           onClick={() => navigate("/polls")}
           className="flex items-center gap-2 text-sm font-medium mb-5 transition-colors group"
           style={{ color: "rgba(255,255,255,0.4)" }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "#c084fc"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.4)"}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#c084fc")}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.color = "rgba(255,255,255,0.4)")
+          }
         >
-          <ArrowLeft size={15} className="transition-transform group-hover:-translate-x-1" />
+          <ArrowLeft
+            size={15}
+            className="transition-transform group-hover:-translate-x-1"
+          />
           Back to My Polls
         </button>
 
@@ -241,7 +265,10 @@ const PollAnalytics = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-white">
             {loading ? "Loading…" : poll?.title || "Poll Analytics"}
           </h1>
-          <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p
+            className="text-sm mt-1"
+            style={{ color: "rgba(255,255,255,0.4)" }}
+          >
             Detailed insights for this poll.
           </p>
         </motion.div>
@@ -261,16 +288,37 @@ const PollAnalytics = () => {
         <>
           {/* Stat Cards */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-            <StatCard index={0} icon={BarChart3} label="Total Votes" value={analytics?.stats?.totalVotes ?? 0} accent="#a855f7" />
-            <StatCard index={1} icon={Users} label="Participants" value={analytics?.stats?.totalParticipants ?? 0} accent="#6366f1" />
-            <StatCard index={2} icon={ListChecks} label="Questions" value={analytics?.stats?.totalQuestions ?? 0} accent="#ec4899" />
+            <StatCard
+              index={0}
+              icon={BarChart3}
+              label="Total Votes"
+              value={analytics?.stats?.totalVotes ?? 0}
+              accent="#a855f7"
+            />
+            <StatCard
+              index={1}
+              icon={Users}
+              label="Participants"
+              value={analytics?.stats?.totalParticipants ?? 0}
+              accent="#6366f1"
+            />
+            <StatCard
+              index={2}
+              icon={ListChecks}
+              label="Questions"
+              value={analytics?.stats?.totalQuestions ?? 0}
+              accent="#ec4899"
+            />
             <StatCard
               index={3}
               icon={TrendingUp}
               label="Avg per Question"
               value={
                 analytics?.stats?.totalQuestions > 0
-                  ? Math.round((analytics?.stats?.totalVotes || 0) / analytics?.stats?.totalQuestions)
+                  ? Math.round(
+                      (analytics?.stats?.totalVotes || 0) /
+                        analytics?.stats?.totalQuestions,
+                    )
                   : 0
               }
               accent="#8b5cf6"
@@ -280,32 +328,76 @@ const PollAnalytics = () => {
           {/* Charts */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
             {/* Area Chart */}
-            <ChartCard index={4} title="Vote Activity" subtitle="Cumulative votes over time">
+            <ChartCard
+              index={4}
+              title="Vote Activity"
+              subtitle="Cumulative votes over time"
+            >
               <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={timelineData}>
                     <defs>
                       <linearGradient id="voteGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#a855f7" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
+                        <stop
+                          offset="0%"
+                          stopColor="#a855f7"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="#a855f7"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis dataKey="name" stroke="rgba(255,255,255,0.2)" tickLine={false} axisLine={false} style={{ fontSize: "11px" }} />
-                    <YAxis stroke="rgba(255,255,255,0.2)" tickLine={false} axisLine={false} style={{ fontSize: "11px" }} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="rgba(255,255,255,0.05)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke="rgba(255,255,255,0.2)"
+                      tickLine={false}
+                      axisLine={false}
+                      style={{ fontSize: "11px" }}
+                    />
+                    <YAxis
+                      stroke="rgba(255,255,255,0.2)"
+                      tickLine={false}
+                      axisLine={false}
+                      style={{ fontSize: "11px" }}
+                    />
                     <Tooltip {...TOOLTIP_STYLE} />
-                    <Area type="monotone" dataKey="votes" stroke="#a855f7" fill="url(#voteGrad)" strokeWidth={2.5} dot={false} />
+                    <Area
+                      type="monotone"
+                      dataKey="votes"
+                      stroke="#a855f7"
+                      fill="url(#voteGrad)"
+                      strokeWidth={2.5}
+                      dot={false}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </ChartCard>
 
             {/* Pie Chart */}
-            <ChartCard index={5} title="Participation Ratio" subtitle="Votes vs unique participants">
+            <ChartCard
+              index={5}
+              title="Participation Ratio"
+              subtitle="Votes vs unique participants"
+            >
               <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={pieData} dataKey="value" outerRadius={90} innerRadius={48} paddingAngle={3}>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      outerRadius={90}
+                      innerRadius={48}
+                      paddingAngle={3}
+                    >
                       {pieData.map((_, i) => (
                         <Cell key={i} fill={CHART_COLORS[i]} />
                       ))}
@@ -314,7 +406,10 @@ const PollAnalytics = () => {
                     <Legend
                       iconType="circle"
                       iconSize={8}
-                      wrapperStyle={{ fontSize: "12px", color: "rgba(255,255,255,0.5)" }}
+                      wrapperStyle={{
+                        fontSize: "12px",
+                        color: "rgba(255,255,255,0.5)",
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -323,17 +418,52 @@ const PollAnalytics = () => {
 
             {/* Bar Chart */}
             {engagementData.length > 0 && (
-              <ChartCard index={6} title="Poll Engagement" subtitle="Votes vs participants comparison" span={2}>
+              <ChartCard
+                index={6}
+                title="Poll Engagement"
+                subtitle="Votes vs participants comparison"
+                span={2}
+              >
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={engagementData} barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                      <XAxis dataKey="name" stroke="rgba(255,255,255,0.2)" tickLine={false} axisLine={false} style={{ fontSize: "11px" }} />
-                      <YAxis stroke="rgba(255,255,255,0.2)" tickLine={false} axisLine={false} style={{ fontSize: "11px" }} />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="rgba(255,255,255,0.05)"
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="name"
+                        stroke="rgba(255,255,255,0.2)"
+                        tickLine={false}
+                        axisLine={false}
+                        style={{ fontSize: "11px" }}
+                      />
+                      <YAxis
+                        stroke="rgba(255,255,255,0.2)"
+                        tickLine={false}
+                        axisLine={false}
+                        style={{ fontSize: "11px" }}
+                      />
                       <Tooltip {...TOOLTIP_STYLE} />
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px", color: "rgba(255,255,255,0.5)" }} />
-                      <Bar dataKey="votes" fill="#a855f7" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="participants" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                      <Legend
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{
+                          fontSize: "12px",
+                          color: "rgba(255,255,255,0.5)",
+                        }}
+                      />
+                      <Bar
+                        dataKey="votes"
+                        fill="#a855f7"
+                        radius={[6, 6, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="participants"
+                        fill="#6366f1"
+                        radius={[6, 6, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
