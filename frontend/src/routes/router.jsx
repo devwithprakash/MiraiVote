@@ -16,7 +16,7 @@ export const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: "/public/:pollId",
+    path: "/public/:slug",
     element: <PublicPollPage />,
   },
 

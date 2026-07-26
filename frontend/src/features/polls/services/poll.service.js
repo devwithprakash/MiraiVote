@@ -74,17 +74,29 @@ export const pollService = {
 
     return data;
   },
-  async fetchPublicPoll(id) {
-    const { data } = await api.get(`/poll/public/${id}`, {});
+  async fetchPublicPoll(slug, token) {
+    const { data } = await api.get(`/poll/public/${slug}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     return data;
   },
 
-  async submitPoll(id, pollInfo) {
-    const { data } = await api.post(`/poll/${id}/submit`, {
-      pollInfo,
-      anonymousId: getAnonymousId(),
-    });
+  async submitPoll(slug, pollInfo, token) {
+    const { data } = await api.post(
+      `/poll/${slug}/submit`,
+      {
+        pollInfo,
+        anonymousId: getAnonymousId(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     return data;
   },

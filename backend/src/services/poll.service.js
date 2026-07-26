@@ -325,15 +325,97 @@ const fetchAnalytics = async (pollId, days, userId) => {
   }
 };
 
+const fetchPollBySlug = async (slug, userId) => {
+  try {
+    const user = await getUser(userId);
+
+    const poll = await Poll.findOne({ slug });
+
+    if (!poll) {
+      throw ApiError.notfound("Poll not found");
+    }
+
+    const isExpired = poll.expireAt && new Date() > new Date(poll.expireAt);
+
+    const questions = await Question.find({
+      pollId: poll._id,
+    });
+
+    const questionsWithOptions = await Promise.all(
+      questions.map(async (question) => {
+        const options = await Option.find({
+          questionId: question._id,
+        });
+
+        const totalVotes = await Answer.countDocuments({
+          questionId: question._id,
+        });
+
+        const optionsMapped = await Promise.all(
+          options.map(async (option) => {
+            const votes = await Answer.countDocuments({
+              optionId: option._id,
+            });
+
+            return {
+              ...option.toObject(),
+
+              ...(isExpired && {
+                votes,
+                percentage:
+                  totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0,
+              }),
+            };
+          }),
+        );
+
+        return {
+          ...question.toObject(),
+
+          options: optionsMapped,
+
+          ...(isExpired && {
+            totalVotes,
+          }),
+        };
+      }),
+    );
+
+    console.log("Question with options", questionsWithOptions);
+
+    const people = await Participant.countDocuments({
+      pollId: poll._id,
+    });
+
+    const votes = await Answer.countDocuments({
+      pollId: poll._id,
+    });
+
+    return {
+      ...poll.toObject(),
+
+      isExpired,
+
+      questions: questionsWithOptions,
+
+      people,
+      votes,
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 // Remaining services
 
-const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
+const submitPoll = async (slug, pollInfo, anonymousId, userId) => {
+  const user = await getUser(userId);
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    const poll = await Poll.findById(pollId).session(session);
+    const poll = await Poll.findOne({ slug }).session(session);
 
     if (!poll) {
       throw ApiError.notfound("Poll not found");
@@ -354,7 +436,7 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
     if (poll.mode === "auth") {
       const alreadySubmitted = await Participant.findOne({
         pollId: poll._id,
-        userId,
+        userId: user._id,
       }).session(session);
 
       if (alreadySubmitted) {
@@ -424,7 +506,7 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
       [
         {
           pollId: poll._id,
-          userId: userId || null,
+          userId: user._id || null,
           anonymousId: anonymousId || null,
           submittedAt: new Date(),
         },
@@ -507,6 +589,7 @@ const submitPoll = async (pollId, userId, pollInfo, anonymousId) => {
       participantId: participant._id,
     };
   } catch (error) {
+    console.log(error);
     await session.abortTransaction();
 
     throw error;
@@ -590,85 +673,6 @@ const pollResult = async (shareToken, userId) => {
   };
 };
 
-const fetchPollBySlug = async (slug, userId) => {
-  try {
-    const user = await getUser(userId);
-
-    const poll = await Poll.findOne({ slug });
-
-    if (!poll) {
-      throw ApiError.notfound("Poll not found");
-    }
-
-    const isExpired = poll.expireAt && new Date() > new Date(poll.expireAt);
-
-    const questions = await Question.find({
-      pollId: poll._id,
-    });
-
-    const questionsWithOptions = await Promise.all(
-      questions.map(async (question) => {
-        const options = await Option.find({
-          questionId: question._id,
-        });
-
-        const totalVotes = await Answer.countDocuments({
-          questionId: question._id,
-        });
-
-        const optionsMapped = await Promise.all(
-          options.map(async (option) => {
-            const votes = await Answer.countDocuments({
-              optionId: option._id,
-            });
-
-            return {
-              ...option.toObject(),
-
-              ...(isExpired && {
-                votes,
-                percentage:
-                  totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0,
-              }),
-            };
-          }),
-        );
-
-        return {
-          ...question.toObject(),
-
-          options: optionsMapped,
-
-          ...(isExpired && {
-            totalVotes,
-          }),
-        };
-      }),
-    );
-
-    const people = await Participant.countDocuments({
-      pollId: poll._id,
-    });
-
-    const votes = await Answer.countDocuments({
-      pollId: poll._id,
-    });
-
-    return {
-      ...poll.toObject(),
-
-      isExpired,
-
-      questions: questionsWithOptions,
-
-      people,
-      votes,
-    };
-  } catch (error) {
-    console.log("error", error);
-  }
-};
-
 export {
   createPoll,
   fetchPoll,
@@ -678,4 +682,5 @@ export {
   fetchAnalytics,
   deletePoll,
   updatePoll,
+  fetchPollBySlug,
 };

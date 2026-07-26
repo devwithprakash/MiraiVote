@@ -16,9 +16,10 @@ const fetchPoll = async (req, res) => {
 
   ApiResponse.ok(res, "Poll fetched successfully", result);
 };
+
 const fetchPollBySlug = async (req, res) => {
   const { userId } = getAuth(req);
-  const result = await service.fetchPoll(req.params.id, userId);
+  const result = await service.fetchPollBySlug(req.params.slug, userId);
 
   ApiResponse.ok(res, "Poll fetched successfully", result);
 };
@@ -47,11 +48,12 @@ const updatePoll = async (req, res) => {
 };
 
 const submitPoll = async (req, res) => {
+  const {userId} = getAuth(req)
   const result = await service.submitPoll(
-    req.params.id,
-    req.userId,
+    req.params.slug,
     req.body.pollInfo,
     req.body.anonymousId,
+    userId
   );
 
   ApiResponse.ok(res, "Poll submitted successfully", result);
@@ -78,4 +80,5 @@ export {
   fetchAnalytics,
   deletePoll,
   updatePoll,
+  fetchPollBySlug
 };

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { pollService } from "../services/poll.service";
 import { socket } from "../../../shared/socket/socket.js";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 const BAR_COLORS = ["#a855f7", "#6366f1", "#ec4899", "#8b5cf6", "#06b6d4"];
 
@@ -15,13 +16,17 @@ const PublicPollPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const { pollId } = useParams();
+  const { getToken } = useAuth();
+
+  const { slug } = useParams();
 
   const isExpired = poll?.isExpired;
   const answeredCount = Object.keys(selectedOptions).length;
   const totalQuestions = poll?.questions?.length || 0;
-  const progressPercentage = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
-  const canSubmit = answeredCount === totalQuestions && !submitted && !submitting && !isExpired;
+  const progressPercentage =
+    totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+  const canSubmit =
+    answeredCount === totalQuestions && !submitted && !submitting && !isExpired;
 
   const handleVote = (questionId, optionId) => {
     if (submitted || isExpired) return;
@@ -30,9 +35,10 @@ const PublicPollPage = () => {
 
   useEffect(() => {
     const fetchPublicPoll = async () => {
+      const token = await getToken();
       try {
         setLoading(true);
-        const response = await pollService.fetchPublicPoll(pollId);
+        const response = await pollService.fetchPublicPoll(slug, token);
         setPoll(response.data);
       } catch {
         toast.error("Failed to load poll");
@@ -41,16 +47,16 @@ const PublicPollPage = () => {
       }
     };
     fetchPublicPoll();
-  }, [pollId]);
+  }, [slug]);
 
   // Socket: join poll room for live updates
   useEffect(() => {
-    if (!pollId) return;
-    const onConnect = () => socket.emit("join_poll", pollId);
+    if (!slug) return;
+    const onConnect = () => socket.emit("join_poll", slug);
     socket.on("connect", onConnect);
-    if (socket.connected) socket.emit("join_poll", pollId);
+    if (socket.connected) socket.emit("join_poll", slug);
     return () => socket.off("connect", onConnect);
-  }, [pollId]);
+  }, [slug]);
 
   // Socket: live result updates
   useEffect(() => {
@@ -62,15 +68,23 @@ const PublicPollPage = () => {
           votes: data.votes,
           people: data.people,
           questions: prev.questions.map((question) => {
-            const updatedQ = data.questionVotes.find((q) => q.questionId === question._id);
+            const updatedQ = data.questionVotes.find(
+              (q) => q.questionId === question._id,
+            );
             if (!updatedQ) return question;
             return {
               ...question,
               totalVotes: updatedQ.totalVotes,
               options: question.options.map((option) => {
-                const updatedOpt = updatedQ.options.find((o) => o.optionId === option._id);
+                const updatedOpt = updatedQ.options.find(
+                  (o) => o.optionId === option._id,
+                );
                 return updatedOpt
-                  ? { ...option, votes: updatedOpt.votes, percentage: updatedOpt.percentage }
+                  ? {
+                      ...option,
+                      votes: updatedOpt.votes,
+                      percentage: updatedOpt.percentage,
+                    }
                   : option;
               }),
             };
@@ -84,16 +98,20 @@ const PublicPollPage = () => {
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+    const token = await getToken();
     try {
       setSubmitting(true);
-      const pollInfo = Object.entries(selectedOptions).map(([questionId, optionId]) => ({
-        questionId,
-        optionId,
-      }));
-      const response = await pollService.submitPoll(pollId, pollInfo);
+      const pollInfo = Object.entries(selectedOptions).map(
+        ([questionId, optionId]) => ({
+          questionId,
+          optionId,
+        }),
+      );
+      const response = await pollService.submitPoll(slug, pollInfo, token);
       setSubmitted(true);
       toast.success(response.data.message || "Vote submitted!");
     } catch (error) {
+      console.log(error)
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setSubmitting(false);
@@ -114,7 +132,9 @@ const PublicPollPage = () => {
           >
             <Zap size={22} className="text-white" />
           </div>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Loading poll…</p>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Loading poll…
+          </p>
         </div>
       </div>
     );
@@ -128,7 +148,9 @@ const PublicPollPage = () => {
       >
         <div className="text-center">
           <p className="text-lg font-bold text-white mb-2">Poll not found</p>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>This poll may have been removed or the link is invalid.</p>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+            This poll may have been removed or the link is invalid.
+          </p>
           <Link
             to="/"
             className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
@@ -160,7 +182,9 @@ const PublicPollPage = () => {
       >
         <motion.div
           className="h-full"
-          style={{ background: "linear-gradient(90deg, #a855f7, #6366f1, #ec4899)" }}
+          style={{
+            background: "linear-gradient(90deg, #a855f7, #6366f1, #ec4899)",
+          }}
           initial={{ width: 0 }}
           animate={{ width: `${progressPercentage}%` }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -186,12 +210,18 @@ const PublicPollPage = () => {
           <span className="text-sm font-bold text-white">PulseBoard</span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <div
+            className="flex items-center gap-1.5 text-xs"
+            style={{ color: "rgba(255,255,255,0.4)" }}
+          >
             <Users size={12} />
             <span>{poll.people ?? 0} joined</span>
           </div>
           {!isExpired && (
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: "#c084fc" }}>
+            <div
+              className="flex items-center gap-1.5 text-xs"
+              style={{ color: "#c084fc" }}
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
               Live
             </div>
@@ -231,9 +261,14 @@ const PublicPollPage = () => {
             )}
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-bold text-white">{poll.title}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">
+            {poll.title}
+          </h1>
           {poll.description && (
-            <p className="text-sm mt-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <p
+              className="text-sm mt-1.5"
+              style={{ color: "rgba(255,255,255,0.45)" }}
+            >
               {poll.description}
             </p>
           )}
@@ -261,7 +296,11 @@ const PublicPollPage = () => {
                 key={question._id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: qIdx * 0.06 + 0.15, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                transition={{
+                  delay: qIdx * 0.06 + 0.15,
+                  duration: 0.45,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
                 className="rounded-2xl overflow-hidden"
                 style={{
                   background: "rgba(255,255,255,0.025)",
@@ -276,7 +315,12 @@ const PublicPollPage = () => {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-sm font-bold text-white leading-snug">
-                      <span style={{ color: "rgba(255,255,255,0.3)", fontFamily: "monospace" }}>
+                      <span
+                        style={{
+                          color: "rgba(255,255,255,0.3)",
+                          fontFamily: "monospace",
+                        }}
+                      >
                         Q{qIdx + 1}.{" "}
                       </span>
                       {question.text}
@@ -305,7 +349,10 @@ const PublicPollPage = () => {
                         </span>
                       )}
                       {showResults && (
-                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                        <span
+                          className="text-[10px]"
+                          style={{ color: "rgba(255,255,255,0.3)" }}
+                        >
                           {question.totalVotes ?? 0} votes
                         </span>
                       )}
@@ -316,8 +363,9 @@ const PublicPollPage = () => {
                 {/* Options */}
                 <div className="p-3 space-y-2">
                   {question.options?.map((option, oIdx) => {
-                    const isSelected = selectedOptions[question._id] === option._id;
-                    const pct = showResults ? (option.percentage || 0) : 0;
+                    const isSelected =
+                      selectedOptions[question._id] === option._id;
+                    const pct = showResults ? option.percentage || 0 : 0;
                     const color = BAR_COLORS[oIdx % BAR_COLORS.length];
 
                     return (
@@ -331,8 +379,11 @@ const PublicPollPage = () => {
                             ? "rgba(168,85,247,0.1)"
                             : "rgba(255,255,255,0.03)",
                           border: `1px solid ${isSelected ? "rgba(168,85,247,0.4)" : "rgba(255,255,255,0.06)"}`,
-                          boxShadow: isSelected ? "0 0 16px rgba(168,85,247,0.12)" : "none",
-                          cursor: submitted || isExpired ? "default" : "pointer",
+                          boxShadow: isSelected
+                            ? "0 0 16px rgba(168,85,247,0.12)"
+                            : "none",
+                          cursor:
+                            submitted || isExpired ? "default" : "pointer",
                         }}
                       >
                         {/* Background bar for results */}
@@ -342,7 +393,11 @@ const PublicPollPage = () => {
                             style={{ background: `${color}15` }}
                             initial={{ width: 0 }}
                             animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.8, delay: oIdx * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{
+                              duration: 0.8,
+                              delay: oIdx * 0.1,
+                              ease: [0.16, 1, 0.3, 1],
+                            }}
                           />
                         )}
 
@@ -356,7 +411,9 @@ const PublicPollPage = () => {
                                   ? "linear-gradient(135deg, #a855f7, #6366f1)"
                                   : "rgba(255,255,255,0.06)",
                                 border: `2px solid ${isSelected ? "transparent" : "rgba(255,255,255,0.15)"}`,
-                                boxShadow: isSelected ? "0 0 10px rgba(168,85,247,0.4)" : "none",
+                                boxShadow: isSelected
+                                  ? "0 0 10px rgba(168,85,247,0.4)"
+                                  : "none",
                               }}
                             >
                               {isSelected && (
@@ -365,7 +422,11 @@ const PublicPollPage = () => {
                             </div>
                             <span
                               className="text-sm font-medium"
-                              style={{ color: isSelected ? "#fff" : "rgba(255,255,255,0.65)" }}
+                              style={{
+                                color: isSelected
+                                  ? "#fff"
+                                  : "rgba(255,255,255,0.65)",
+                              }}
                             >
                               {option.text}
                             </span>
@@ -409,7 +470,8 @@ const PublicPollPage = () => {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="rounded-2xl p-7 text-center"
               style={{
-                background: "linear-gradient(135deg, rgba(168,85,247,0.1), rgba(99,102,241,0.08))",
+                background:
+                  "linear-gradient(135deg, rgba(168,85,247,0.1), rgba(99,102,241,0.08))",
                 border: "1px solid rgba(168,85,247,0.25)",
               }}
             >
@@ -423,7 +485,10 @@ const PublicPollPage = () => {
                 <CheckCircle2 size={26} className="text-white" />
               </div>
               <h3 className="text-lg font-bold text-white mb-1">Thank you!</h3>
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <p
+                className="text-sm"
+                style={{ color: "rgba(255,255,255,0.45)" }}
+              >
                 Your vote has been recorded. Results are live above.
               </p>
             </motion.div>
@@ -443,7 +508,9 @@ const PublicPollPage = () => {
                   : "rgba(255,255,255,0.06)",
                 border: canSubmit ? "none" : "1px solid rgba(255,255,255,0.1)",
                 color: canSubmit ? "#fff" : "rgba(255,255,255,0.35)",
-                boxShadow: canSubmit ? "0 0 30px rgba(168,85,247,0.35)" : "none",
+                boxShadow: canSubmit
+                  ? "0 0 30px rgba(168,85,247,0.35)"
+                  : "none",
                 cursor: canSubmit ? "pointer" : "not-allowed",
                 transform: canSubmit ? undefined : "none",
               }}
@@ -452,19 +519,26 @@ const PublicPollPage = () => {
               {submitting
                 ? "Submitting…"
                 : answeredCount === totalQuestions
-                ? "Submit Vote"
-                : `Answer all questions (${answeredCount}/${totalQuestions})`}
+                  ? "Submit Vote"
+                  : `Answer all questions (${answeredCount}/${totalQuestions})`}
             </motion.button>
           ) : null}
         </AnimatePresence>
 
         {/* Footer */}
-        <div className="text-center text-[11px] pt-2 pb-10" style={{ color: "rgba(255,255,255,0.2)" }}>
+        <div
+          className="text-center text-[11px] pt-2 pb-10"
+          style={{ color: "rgba(255,255,255,0.2)" }}
+        >
           Powered by{" "}
-          <Link to="/" className="font-semibold" style={{ color: "rgba(168,85,247,0.6)" }}>
+          <Link
+            to="/"
+            className="font-semibold"
+            style={{ color: "rgba(168,85,247,0.6)" }}
+          >
             PulseBoard
-          </Link>
-          {" "} · Secure real-time polling
+          </Link>{" "}
+          · Secure real-time polling
         </div>
       </main>
     </div>

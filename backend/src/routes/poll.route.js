@@ -9,12 +9,14 @@ router.post("/", validate(createPollSchema), controller.createPoll);
 router.get("/", controller.fetchAllPolls);
 router.patch("/:pollId", validate(updatePollSchema), controller.updatePoll);
 router.get("/:id", controller.fetchPoll);
-router.get("/:pollId/analytics", controller.fetchAnalytics);
 router.delete("/:id", controller.deletePoll);
 
+
+router.get("/:pollId/analytics", controller.fetchAnalytics);
+router.get("/public/:slug", controller.fetchPollBySlug);
+router.post("/:slug/submit", controller.submitPoll);
+
 // remaining routes
-router.get("/public/:slug", controller.fetchPoll);
-router.post("/:id/submit", controller.submitPoll);
 router.get("/:token/result", controller.pollResult);
 
 export default router;
