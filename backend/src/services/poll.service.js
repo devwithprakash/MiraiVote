@@ -184,7 +184,22 @@ const fetchAllPolls = async (userId) => {
 
   const polls = await Poll.find({ creatorId: user._id }).lean();
 
-  return polls;
+  const result = await Promise.all(
+    polls.map(async (poll) => {
+      const [questionCount, participantCount] = await Promise.all([
+        Question.countDocuments({ pollId: poll._id }),
+        Participant.countDocuments({ pollId: poll._id }),
+      ]);
+
+      return {
+        ...poll,
+        totalQuestions: questionCount,
+        totalParticipants: participantCount,
+      };
+    }),
+  );
+
+  return result;
 };
 
 const updatePoll = async (payload, pollId, userId) => {

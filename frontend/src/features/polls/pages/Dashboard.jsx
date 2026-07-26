@@ -12,7 +12,7 @@ import {
   Vote,
 } from "lucide-react";
 import { pollService } from "../services/poll.service.js";
-import { useUser } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -41,7 +41,10 @@ const StatCard = ({ icon: Icon, label, value, accent, index }) => (
     />
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>
+        <p
+          className="text-xs font-semibold uppercase tracking-widest mb-3"
+          style={{ color: "rgba(255,255,255,0.35)" }}
+        >
           {label}
         </p>
         <p className="text-3xl font-bold text-white">{value ?? "—"}</p>
@@ -90,9 +93,15 @@ const RecentPollCard = ({ poll, index }) => {
             }}
           />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{poll.title}</p>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-              {poll.votes ?? 0} votes · {poll.people ?? 0} participants
+            <p className="text-sm font-semibold text-white truncate">
+              {poll.title}
+            </p>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: "rgba(255,255,255,0.35)" }}
+            >
+              {poll.totalQuestions ?? 0} Questions ·{" "}
+              {poll.totalParticipants ?? 0} participants
             </p>
           </div>
         </div>
@@ -108,20 +117,20 @@ const RecentPollCard = ({ poll, index }) => {
 
 const Dashboard = () => {
   const [polls, setPolls] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useUser();
 
+  const { getToken } = useAuth();
+
   useEffect(() => {
     const load = async () => {
+      const token = await getToken();
       try {
         setLoading(true);
-        const [pollsRes, analyticsRes] = await Promise.all([
-          pollService.fetchAllPolls(),
-          pollService.fetchAnalytics("all"),
+        const [pollsRes] = await Promise.all([
+          pollService.fetchAllPolls(token),
         ]);
         setPolls(pollsRes.data || []);
-        setAnalytics(analyticsRes.data || null);
       } catch (err) {
         console.error(err);
       } finally {
@@ -150,20 +159,28 @@ const Dashboard = () => {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="relative overflow-hidden rounded-2xl px-7 py-8"
         style={{
-          background: "linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(99,102,241,0.08) 50%, rgba(236,72,153,0.06) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(99,102,241,0.08) 50%, rgba(236,72,153,0.06) 100%)",
           border: "1px solid rgba(168,85,247,0.2)",
         }}
       >
         <div
           className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-30 pointer-events-none"
-          style={{ background: "radial-gradient(circle, #a855f7, transparent)" }}
+          style={{
+            background: "radial-gradient(circle, #a855f7, transparent)",
+          }}
         />
         <div
           className="absolute bottom-0 left-1/3 w-32 h-32 rounded-full blur-2xl opacity-20 pointer-events-none"
-          style={{ background: "radial-gradient(circle, #6366f1, transparent)" }}
+          style={{
+            background: "radial-gradient(circle, #6366f1, transparent)",
+          }}
         />
         <div className="relative">
-          <p className="text-sm font-medium mb-1" style={{ color: "rgba(192,132,252,0.8)" }}>
+          <p
+            className="text-sm font-medium mb-1"
+            style={{ color: "rgba(192,132,252,0.8)" }}
+          >
             {greeting()},
           </p>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
@@ -217,21 +234,21 @@ const Dashboard = () => {
             index={0}
             icon={ListChecks}
             label="Total Polls"
-            value={loading ? "…" : analytics?.stats?.totalPolls ?? polls.length}
+            value={loading ? "…" : polls.length}
             accent="#a855f7"
           />
           <StatCard
             index={1}
             icon={Vote}
             label="Total Votes"
-            value={loading ? "…" : analytics?.stats?.totalVotes ?? 0}
+            value={loading ? "…" : 0}
             accent="#6366f1"
           />
           <StatCard
             index={2}
             icon={Users}
             label="Participants"
-            value={loading ? "…" : analytics?.stats?.totalParticipants ?? 0}
+            value={loading ? "…" : 0}
             accent="#ec4899"
           />
           <StatCard
@@ -287,12 +304,20 @@ const Dashboard = () => {
           >
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-              style={{ background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)" }}
+              style={{
+                background: "rgba(168,85,247,0.1)",
+                border: "1px solid rgba(168,85,247,0.2)",
+              }}
             >
               <ListChecks size={24} style={{ color: "#c084fc" }} />
             </div>
-            <p className="text-base font-semibold text-white mb-1">No polls yet</p>
-            <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <p className="text-base font-semibold text-white mb-1">
+              No polls yet
+            </p>
+            <p
+              className="text-sm mb-5"
+              style={{ color: "rgba(255,255,255,0.35)" }}
+            >
               Create your first poll and start collecting responses.
             </p>
             <Link

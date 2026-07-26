@@ -205,16 +205,12 @@ const PollCard = ({ poll, index, onDelete }) => {
           style={{ color: "rgba(255,255,255,0.4)" }}
         >
           <div className="flex items-center gap-1.5">
-            <Vote size={13} />
-            <span>{poll.votes ?? 0} votes</span>
-          </div>
-          <div className="flex items-center gap-1.5">
             <Users size={13} />
-            <span>{poll.people ?? 0} participants</span>
+            <span>{poll.totalParticipants ?? 0} participants</span>
           </div>
           <div className="flex items-center gap-1.5">
             <ListChecks size={13} />
-            <span>{poll.questions?.length ?? 0} questions</span>
+            <span>{poll.totalQuestions ?? 0} questions</span>
           </div>
           {poll.expireAt && (
             <div className="flex items-center gap-1.5">
