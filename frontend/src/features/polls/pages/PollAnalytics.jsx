@@ -236,7 +236,7 @@ const PollAnalytics = () => {
       <div>
         <button
           onClick={() => navigate("/polls")}
-          className="flex items-center gap-2 text-sm font-medium mb-5 transition-colors group"
+          className="flex items-center cursor-pointer gap-2 text-sm font-medium mb-5 transition-colors group"
           style={{ color: "rgba(255,255,255,0.4)" }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#c084fc")}
           onMouseLeave={(e) =>
@@ -247,7 +247,7 @@ const PollAnalytics = () => {
             size={15}
             className="transition-transform group-hover:-translate-x-1"
           />
-          Back to My Polls
+          Back to Polls
         </button>
 
         <motion.div

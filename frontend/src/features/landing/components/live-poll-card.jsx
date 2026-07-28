@@ -68,7 +68,7 @@ export const LivePollCard = () => (
       style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
     >
       <span className="text-xs text-gray-500">1,284 votes</span>
-      <span className="text-xs text-gray-500">pulseboard.app/p/ship-it</span>
+      <span className="text-xs text-gray-500">miraivote.app/p/ship-it</span>
     </div>
   </div>
 );

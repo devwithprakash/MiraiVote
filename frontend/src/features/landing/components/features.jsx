@@ -35,10 +35,6 @@ export const FeatureCard = ({
       boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
     }}
   >
-    <div
-      className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-20 group-hover:opacity-35 transition-opacity duration-500 pointer-events-none"
-      style={{ background: accent.from }}
-    />
 
     <div
       className={`relative z-[2] ${

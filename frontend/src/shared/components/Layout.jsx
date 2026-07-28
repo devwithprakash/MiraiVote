@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import { Menu, X, Bell } from "lucide-react";
+import { Menu, X, Bell, Zap } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 
 export const Layout = () => {
@@ -11,7 +11,7 @@ export const Layout = () => {
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{ background: "#09090f", fontFamily: "'DM Sans', sans-serif" }}
+      style={{ background: "#09090f", fontFamily: "'Inter', sans-serif" }}
     >
       {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0">
@@ -23,7 +23,10 @@ export const Layout = () => {
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
             className="absolute inset-0"
-            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+            style={{
+              background: "rgba(0,0,0,0.7)",
+              backdropFilter: "blur(8px)",
+            }}
             onClick={() => setIsSidebarOpen(false)}
           />
           <div className="relative z-50 w-[280px] h-full">
@@ -54,22 +57,25 @@ export const Layout = () => {
           }}
         >
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl transition-colors"
-              style={{ background: "rgba(255,255,255,0.05)" }}
-            >
-              <Menu size={20} className="text-white" />
-            </button>
-
-            {/* Page context — will inherit from child if needed */}
-            <div className="flex items-center gap-2">
+            {/* Mobile: show logo always visible */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-1.5 rounded-lg transition-colors"
+                style={{ background: "rgba(255,255,255,0.05)" }}
+              >
+                <Menu size={18} className="text-white" />
+              </button>
               <div
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}
-              />
-              <span className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
-                PulseBoard
+                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                style={{
+                  background: "linear-gradient(135deg, #a855f7, #6366f1)",
+                }}
+              >
+                <Zap size={14} className="text-white" />
+              </div>
+              <span className="text-sm font-semibold tracking-tight text-white">
+                MiraiVote
               </span>
             </div>
           </div>
@@ -78,9 +84,6 @@ export const Layout = () => {
           <div className="flex items-center gap-3">
             {user && (
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium hidden sm:block" style={{ color: "rgba(255,255,255,0.7)" }}>
-                  {user.fullName || user.firstName || "User"}
-                </span>
                 {user.imageUrl ? (
                   <img
                     src={user.imageUrl}
@@ -91,7 +94,9 @@ export const Layout = () => {
                 ) : (
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                    style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}
+                    style={{
+                      background: "linear-gradient(135deg, #a855f7, #6366f1)",
+                    }}
                   >
                     {(user.fullName || user.firstName || "U")[0].toUpperCase()}
                   </div>

@@ -22,17 +22,17 @@ import "./landing.css";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-export default function PulseBoard() {
+export default function MiraiVote() {
   return (
     <div
       className="min-h-screen text-white overflow-x-hidden"
-      style={{ background: "#09090f", fontFamily: "'DM Sans', sans-serif" }}
+      style={{ background: "#09090f", fontFamily: "'Inter', sans-serif" }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        .hero-glow { background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139,92,246,0.25) 0%, transparent 70%); }
+        .hero-glow { background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139,92,246,0.18) 0%, transparent 70%); }
         .gradient-text { background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #6366f1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         @keyframes float { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-12px)} }
         @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
@@ -42,14 +42,6 @@ export default function PulseBoard() {
         .fade-up-3 { animation: fadeUp 0.8s 0.28s cubic-bezier(0.16,1,0.3,1) both; }
         .fade-up-4 { animation: fadeUp 0.8s 0.42s cubic-bezier(0.16,1,0.3,1) both; }
         .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
-        .feature-grid-bg {
-          background-image:
-            linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-          background-size: 42px 42px;
-          -webkit-mask-image: radial-gradient(ellipse 65% 100% at 50% 30%, #000 40%, transparent 100%);
-          mask-image: radial-gradient(ellipse 65% 100% at 50% 30%, #000 40%, transparent 100%);
-        }
         .feature-card { position: relative; isolation: isolate; }
         .feature-card::before {
           content: "";
@@ -114,7 +106,7 @@ export default function PulseBoard() {
         </h1>
 
         <p className="fade-up-3 text-gray-400 text-lg max-w-xl mx-auto mb-8 leading-relaxed">
-          PulseBoard lets you create a poll, share a link, and watch your
+          MiraiVote lets you create a poll, share a link, and watch your
           audience respond live — with clean analytics for every question.
         </p>
 
@@ -159,7 +151,6 @@ export default function PulseBoard() {
 
       {/* Features */}
       <section id="features" className="py-24 px-6 relative">
-        <div className="feature-grid-bg absolute inset-0 pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center mb-16 relative">
           <motion.span
             initial={{ opacity: 0, y: 16 }}
@@ -173,7 +164,7 @@ export default function PulseBoard() {
               color: "#c084fc",
             }}
           >
-            Why teams switch to PulseBoard
+            Why teams choose MiraiVote
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -318,11 +309,60 @@ export default function PulseBoard() {
         </Link>
       </section>
 
-      <div className="divider mx-8" />
-
       {/* Footer */}
-      <footer className="py-8 text-center text-xs text-gray-500">
-        © 2026 PulseBoard — Real-time polling for everyone
+      <footer
+        className="py-12 px-6"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10">
+            {/* Brand */}
+            <div className="max-w-xs">
+              <div className="flex items-center gap-2 mb-3">
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg,#a855f7,#6366f1)" }}
+                >
+                  <Zap size={14} className="text-white" />
+                </div>
+                <span className="font-semibold text-white text-sm tracking-tight">MiraiVote</span>
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+                Real-time polling for teams, classrooms, and live audiences.
+              </p>
+            </div>
+
+            {/* Links */}
+            <div className="flex flex-wrap gap-12">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.25)" }}>Product</p>
+                <ul className="space-y-2">
+                  <li><a href="#features" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>Features</a></li>
+                  <li><a href="#steps" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>How it works</a></li>
+                </ul>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.25)" }}>Account</p>
+                <ul className="space-y-2">
+                  <li><a href="/login" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>Sign in</a></li>
+                  <li><a href="/register" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>Get started</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="mt-10 pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+          >
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+              © {new Date().getFullYear()} MiraiVote. All rights reserved.
+            </p>
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.2)" }}>
+              Built for real conversations.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

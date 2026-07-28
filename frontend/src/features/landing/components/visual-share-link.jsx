@@ -14,7 +14,7 @@ export const VisualShareLink = ({ accent }) => (
       }}
     >
       <Link2 size={12} color={accent.from} />
-      <span className="truncate">pulseboard.app/p/ship-it</span>
+      <span className="truncate">miraivote.app/p/ship-it</span>
     </div>
     <motion.span
       initial={{ opacity: 0, y: 4 }}

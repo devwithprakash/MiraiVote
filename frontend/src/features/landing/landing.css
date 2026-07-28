@@ -57,22 +57,6 @@ html {
     transparent
   );
 }
-.feature-grid-bg {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 42px 42px;
-  -webkit-mask-image: radial-gradient(
-    ellipse 65% 100% at 50% 30%,
-    #000 40%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 65% 100% at 50% 30%,
-    #000 40%,
-    transparent 100%
-  );
-}
 .feature-card {
   position: relative;
   isolation: isolate;

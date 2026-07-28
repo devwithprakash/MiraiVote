@@ -12,7 +12,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { pollService } from "../services/poll.service.js";
 import { socket } from "../../../shared/socket/socket.js";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {
@@ -47,7 +47,7 @@ const MiniStat = ({ icon: Icon, label, value, index }) => (
         {label}
       </span>
     </div>
-    <span className="text-3xl font-bold text-white">{value ?? 0}</span>
+    <span className="text-xl font-semibold text-white">{value ?? 0}</span>
   </motion.div>
 );
 
@@ -152,11 +152,11 @@ const PollDetail = () => {
   }, []);
 
   return (
-    <div className="space-y-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
       {/* Back */}
       <button
         onClick={() => navigate("/polls")}
-        className="flex items-center gap-2 text-sm font-medium transition-colors group"
+        className="flex items-center cursor-pointer gap-2 text-sm font-medium transition-colors group"
         style={{ color: "rgba(255,255,255,0.4)" }}
         onMouseEnter={(e) => (e.currentTarget.style.color = "#c084fc")}
         onMouseLeave={(e) =>
@@ -167,7 +167,7 @@ const PollDetail = () => {
           size={15}
           className="transition-transform group-hover:-translate-x-1"
         />
-        My Polls
+        Polls
       </button>
 
       {loading ? (
@@ -188,78 +188,103 @@ const PollDetail = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              {!poll?.isExpired ? (
-                <span
-                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                  style={{
-                    background: "rgba(168,85,247,0.12)",
-                    border: "1px solid rgba(168,85,247,0.3)",
-                    color: "#c084fc",
-                  }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-                  Live
-                </span>
-              ) : (
-                <span
-                  className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    color: "rgba(255,255,255,0.4)",
-                  }}
-                >
-                  Ended
-                </span>
-              )}
-              <span
-                className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                style={{
-                  background: "rgba(99,102,241,0.1)",
-                  border: "1px solid rgba(99,102,241,0.2)",
-                  color: "#818cf8",
-                }}
-              >
-                {poll?.mode}
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {!poll?.isExpired ? (
+                    <span
+                      className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                      style={{
+                        background: "rgba(168,85,247,0.12)",
+                        border: "1px solid rgba(168,85,247,0.3)",
+                        color: "#c084fc",
+                      }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                      Live
+                    </span>
+                  ) : (
+                    <span
+                      className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "rgba(255,255,255,0.4)",
+                      }}
+                    >
+                      Ended
+                    </span>
+                  )}
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                    style={{
+                      background: "rgba(99,102,241,0.1)",
+                      border: "1px solid rgba(99,102,241,0.2)",
+                      color: "#818cf8",
+                    }}
+                  >
+                    {poll?.mode}
+                  </span>
+                </div>
+                <h1 className="text-xl font-semibold text-white tracking-tight">
+                  {poll?.title}
+                </h1>
+                {poll?.description && (
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
+                  >
+                    {poll.description}
+                  </p>
+                )}
+              </div>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              {poll?.title}
-            </h1>
-            {poll?.description && (
-              <p
-                className="text-sm mt-1"
-                style={{ color: "rgba(255,255,255,0.4)" }}
-              >
-                {poll.description}
-              </p>
-            )}
           </motion.div>
 
-          {/* Share Link */}
+          {/* Stats */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <MiniStat
+              index={1}
+              icon={BarChart2}
+              label="Total Votes"
+              value={poll?.votes}
+            />
+            <MiniStat
+              index={2}
+              icon={Users}
+              label="Participants"
+              value={poll?.people}
+            />
+            <MiniStat
+              index={3}
+              icon={ListTodo}
+              label="Questions"
+              value={poll?.questions?.length}
+            />
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-2xl p-5"
+            transition={{ delay: 0.4, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="rounded-xl p-4 mt-6"
             style={{
-              background: "rgba(168,85,247,0.05)",
-              border: "1px solid rgba(168,85,247,0.18)",
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.07)",
             }}
           >
             <p
               className="text-[10px] font-bold uppercase tracking-widest mb-3"
-              style={{ color: "rgba(168,85,247,0.7)" }}
+              style={{ color: "rgba(255,255,255,0.4)" }}
             >
               Share Link
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <div
-                className="flex-1 min-w-0 px-4 py-3 rounded-xl text-sm font-mono overflow-hidden"
+                className="flex-1 min-w-0 px-4 py-2.5 rounded-lg text-sm font-mono overflow-hidden"
                 style={{
-                  background: "rgba(9,9,15,0.6)",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "rgba(0,0,0,0.2)",
+                  border: "1px solid rgba(255,255,255,0.05)",
                   color: "rgba(255,255,255,0.6)",
                 }}
               >
@@ -268,57 +293,33 @@ const PollDetail = () => {
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all"
+                  className="flex items-center cursor-pointer gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-white/5"
                   style={{
                     background: copied
-                      ? "rgba(52,211,153,0.15)"
-                      : "rgba(255,255,255,0.06)",
+                      ? "rgba(52,211,153,0.1)"
+                      : "rgba(255,255,255,0.03)",
                     border: `1px solid ${copied ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.1)"}`,
                     color: copied ? "#34d399" : "rgba(255,255,255,0.7)",
                   }}
                 >
-                  {copied ? <Check size={15} /> : <Copy size={15} />}
-                  {copied ? "Copied!" : "Copy"}
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied ? "Copied" : "Copy"}
                 </button>
                 <a
                   href={pollUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
                   style={{
-                    background: "rgba(168,85,247,0.12)",
-                    border: "1px solid rgba(168,85,247,0.25)",
-                    color: "#c084fc",
+                    background: "linear-gradient(135deg, #a855f7, #6366f1)",
                   }}
                 >
-                  <ExternalLink size={15} />
+                  <ExternalLink size={14} />
                   Open
                 </a>
               </div>
             </div>
           </motion.div>
-
-          {/* Stats */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <MiniStat
-              index={2}
-              icon={BarChart2}
-              label="Total Votes"
-              value={poll?.votes}
-            />
-            <MiniStat
-              index={3}
-              icon={Users}
-              label="Participants"
-              value={poll?.people}
-            />
-            <MiniStat
-              index={4}
-              icon={ListTodo}
-              label="Questions"
-              value={poll?.questions?.length}
-            />
-          </div>
 
           {/* Live Results */}
           <div>
@@ -411,6 +412,8 @@ const PollDetail = () => {
               ))}
             </div>
           </div>
+
+          {/* Share Link */}
         </>
       )}
     </div>

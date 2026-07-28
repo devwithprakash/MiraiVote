@@ -97,7 +97,7 @@ const Analytics = () => {
       {/* Header */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
             Analytics
           </h1>
 

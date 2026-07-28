@@ -82,6 +82,18 @@ export const Nav = () => {
           >
             Stats
           </a>
+
+          {
+            isSignedIn && (
+
+          <a
+            href="/dashboard"
+            className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/5 transition-colors duration-200"
+          >
+            Dashboard
+          </a>
+            )
+          }
         </div>
 
         {/* Auth actions */}

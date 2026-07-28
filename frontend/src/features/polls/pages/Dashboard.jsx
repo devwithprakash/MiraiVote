@@ -12,7 +12,7 @@ import {
   Vote,
 } from "lucide-react";
 import { pollService } from "../services/poll.service.js";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {
   hidden: { opacity: 0, y: 20 },
@@ -47,7 +47,7 @@ const StatCard = ({ icon: Icon, label, value, accent, index }) => (
         >
           {label}
         </p>
-        <p className="text-3xl font-bold text-white">{value ?? "—"}</p>
+        <p className="text-xl font-semibold text-white">{value ?? "—"}</p>
       </div>
       <div
         className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -120,7 +120,6 @@ const Dashboard = () => {
   const [totalParticipants, setTotalParticipants] = useState(0);
   const [responsesToday, setResponsesToday] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { user } = useUser();
 
   const { getToken } = useAuth();
 
@@ -148,92 +147,54 @@ const Dashboard = () => {
   const activePolls = polls.filter((p) => !p.isExpired).length;
   const recentPolls = [...polls].slice(0, 5);
 
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 18) return "Good afternoon";
-    return "Good evening";
-  };
 
   return (
-    <div className="space-y-8" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      {/* Welcome Banner */}
+    <div className="space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* Page Header */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative overflow-hidden rounded-2xl px-7 py-8"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(99,102,241,0.08) 50%, rgba(236,72,153,0.06) 100%)",
-          border: "1px solid rgba(168,85,247,0.2)",
-        }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
-        <div
-          className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-30 pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, #a855f7, transparent)",
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-1/3 w-32 h-32 rounded-full blur-2xl opacity-20 pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, #6366f1, transparent)",
-          }}
-        />
-        <div className="relative">
-          <p
-            className="text-sm font-medium mb-1"
-            style={{ color: "rgba(192,132,252,0.8)" }}
-          >
-            {greeting()},
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
-            {user?.fullName || user?.firstName || "there"} 👋
+        <div>
+          <h1 className="text-xl font-semibold text-white tracking-tight">
+            Overview
           </h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.38)" }}>
             {activePolls > 0
-              ? `You have ${activePolls} active poll${activePolls !== 1 ? "s" : ""} running right now.`
-              : "No active polls. Create one to start collecting responses."}
+              ? `${activePolls} active poll${activePolls !== 1 ? "s" : ""} running`
+              : "No active polls — create one to start collecting responses"}
           </p>
         </div>
-        <div className="relative flex flex-wrap gap-3 mt-6">
-          <Link
-            to="/create"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 hover:scale-105"
-            style={{
-              background: "linear-gradient(135deg, #a855f7, #6366f1)",
-              boxShadow: "0 0 20px rgba(168,85,247,0.35)",
-            }}
-          >
-            <Plus size={16} />
-            Create Poll
-          </Link>
+        <div className="flex items-center gap-2">
           <Link
             to="/polls"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-white/10"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all"
             style={{
-              color: "rgba(255,255,255,0.7)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              color: "rgba(255,255,255,0.55)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(255,255,255,0.03)",
             }}
           >
-            <ListChecks size={16} />
-            View All Polls
+            <ListChecks size={14} />
+            All Polls
+          </Link>
+          <Link
+            to="/create"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium text-white transition-all hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, #a855f7, #6366f1)",
+            }}
+          >
+            <Plus size={14} />
+            New Poll
           </Link>
         </div>
       </motion.div>
 
       {/* Stats Grid */}
       <div>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-xs font-bold uppercase tracking-widest mb-4"
-          style={{ color: "rgba(255,255,255,0.3)" }}
-        >
-          Overview
-        </motion.p>
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
           <StatCard
             index={0}

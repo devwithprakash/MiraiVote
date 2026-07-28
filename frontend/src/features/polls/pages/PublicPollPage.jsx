@@ -156,7 +156,7 @@ const PublicPollPage = () => {
             className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}
           >
-            Go to PulseBoard
+            Go to MiraiVote
           </Link>
         </div>
       </div>
@@ -168,10 +168,10 @@ const PublicPollPage = () => {
   return (
     <div
       className="min-h-screen pb-20"
-      style={{ background: "#09090f", fontFamily: "'DM Sans', sans-serif" }}
+      style={{ background: "#09090f", fontFamily: "'Inter', sans-serif" }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
       `}</style>
 
       {/* Progress Bar */}
@@ -206,7 +206,7 @@ const PublicPollPage = () => {
           >
             <Zap size={14} className="text-white" />
           </div>
-          <span className="text-sm font-bold text-white">PulseBoard</span>
+          <span className="text-sm font-bold text-white">MiraiVote</span>
         </div>
         <div className="flex items-center gap-3">
           <div
@@ -535,7 +535,7 @@ const PublicPollPage = () => {
             className="font-semibold"
             style={{ color: "rgba(168,85,247,0.6)" }}
           >
-            PulseBoard
+            MiraiVote
           </Link>{" "}
           · Secure real-time polling
         </div>

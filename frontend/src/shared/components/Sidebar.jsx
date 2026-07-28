@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-  { icon: ListChecks, label: "My Polls", to: "/polls" },
+  { icon: ListChecks, label: "Polls", to: "/polls" },
   { icon: Plus, label: "Create Poll", to: "/create" },
 ];
 
@@ -80,7 +80,7 @@ const Sidebar = ({ onItemClick }) => {
       style={{
         background: "#09090f",
         borderRight: "1px solid rgba(255,255,255,0.06)",
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Inter', sans-serif",
       }}
     >
       <div className="px-5 pt-6 pb-6">

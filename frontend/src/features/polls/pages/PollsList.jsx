@@ -70,7 +70,7 @@ const DeleteModal = ({ poll, onConfirm, onCancel }) => (
       <div className="flex gap-3 pt-1">
         <button
           onClick={onCancel}
-          className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          className="flex-1 cursor-pointer py-2.5 rounded-xl text-sm font-semibold transition-colors"
           style={{
             background: "rgba(255,255,255,0.06)",
             color: "rgba(255,255,255,0.6)",
@@ -81,7 +81,7 @@ const DeleteModal = ({ poll, onConfirm, onCancel }) => (
         </button>
         <button
           onClick={onConfirm}
-          className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+          className="flex-1 py-2.5 cursor-pointer rounded-xl text-sm font-semibold text-white transition-all"
           style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
         >
           Delete
@@ -430,16 +430,16 @@ const PollsList = () => {
   ];
 
   return (
-    <div className="space-y-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="space-y-7" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="text-2xl sm:text-3xl font-bold text-white"
+            className="text-xl font-semibold text-white tracking-tight"
           >
-            My Polls
+            Polls
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}

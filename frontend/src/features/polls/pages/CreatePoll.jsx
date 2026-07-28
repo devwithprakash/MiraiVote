@@ -15,7 +15,7 @@ const FIELD_STYLE = {
   padding: "0 16px",
   color: "#fff",
   outline: "none",
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: "'Inter', sans-serif",
   fontSize: "14px",
   transition: "border-color 0.2s, box-shadow 0.2s",
 };
@@ -191,7 +191,7 @@ const CreatePoll = () => {
   };
 
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif" }}>
       <form onSubmit={handleSubmit}>
         <div className="mb-8">
           <Link
@@ -207,7 +207,7 @@ const CreatePoll = () => {
               size={15}
               className="transition-transform group-hover:-translate-x-1"
             />
-            My Polls
+            Polls
           </Link>
 
           <motion.div
@@ -215,26 +215,16 @@ const CreatePoll = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="flex items-center gap-3 mb-1">
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(168,85,247,0.2), rgba(99,102,241,0.15))",
-                  border: "1px solid rgba(168,85,247,0.3)",
-                }}
-              >
-                <Zap size={15} style={{ color: "#c084fc" }} />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            <div className="flex flex-col gap-1 mb-2">
+              <h1 className="text-xl font-semibold text-white tracking-tight">
                 {isEditMode ? "Edit Poll" : "Create a Poll"}
               </h1>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                {isEditMode
+                  ? "Update your poll settings and questions."
+                  : "Set up your poll, add questions, and share with your audience."}
+              </p>
             </div>
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              {isEditMode
-                ? "Update your poll settings and questions."
-                : "Set up your poll, add questions, and share with your audience."}
-            </p>
           </motion.div>
         </div>
 
@@ -506,21 +496,21 @@ const CreatePoll = () => {
               onClick={addQuestion}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="w-full py-5 rounded-2xl flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200"
+              className="w-full py-4 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all duration-200"
               style={{
                 border: "1px dashed rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.35)",
-                background: "transparent",
+                color: "rgba(255,255,255,0.5)",
+                background: "rgba(255,255,255,0.015)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(168,85,247,0.35)";
-                e.currentTarget.style.color = "#c084fc";
-                e.currentTarget.style.background = "rgba(168,85,247,0.04)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                e.currentTarget.style.color = "rgba(255,255,255,0.8)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.03)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-                e.currentTarget.style.color = "rgba(255,255,255,0.35)";
-                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.015)";
               }}
             >
               <Plus size={17} />
@@ -548,10 +538,9 @@ const CreatePoll = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="px-8 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: "linear-gradient(135deg, #a855f7, #6366f1)",
-                boxShadow: "0 0 24px rgba(168,85,247,0.35)",
               }}
             >
               {submitting
