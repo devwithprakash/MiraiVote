@@ -19,17 +19,6 @@ createRoot(document.getElementById("root")).render(
       publishableKey={PUBLISHABLE_KEY}
       appearance={{
         theme: dark,
-
-        variables: {
-          colorPrimary: "#8b5cf6",
-          colorBackground: "#0f172a",
-          colorInputBackground: "#111827",
-          colorText: "#ffffff",
-
-          borderRadius: "12px",
-
-          fontFamily: "Inter",
-        },
       }}
     >
       <AuthProvider>
