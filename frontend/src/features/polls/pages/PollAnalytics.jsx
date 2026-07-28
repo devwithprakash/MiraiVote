@@ -204,8 +204,6 @@ const PollAnalytics = () => {
           pollService.fetchPoll(id, token),
         ]);
 
-        console.log("Analytics Data", analyticsRes.data);
-        console.log("Poll Data", pollRes.data);
         setAnalytics(analyticsRes.data);
         setPoll(pollRes.data);
       } catch (err) {
@@ -232,7 +230,6 @@ const PollAnalytics = () => {
   }));
   const questions = poll?.questions || [];
 
-  console.log(analytics?.stats?.totalParticipants);
 
   return (
     <div className="space-y-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>

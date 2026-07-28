@@ -184,22 +184,56 @@ const fetchAllPolls = async (userId) => {
 
   const polls = await Poll.find({ creatorId: user._id }).lean();
 
-  const result = await Promise.all(
-    polls.map(async (poll) => {
-      const [questionCount, participantCount] = await Promise.all([
-        Question.countDocuments({ pollId: poll._id }),
-        Participant.countDocuments({ pollId: poll._id }),
-      ]);
+  const pollIds = polls.map((p) => p._id);
 
-      return {
-        ...poll,
-        totalQuestions: questionCount,
-        totalParticipants: participantCount,
-      };
-    }),
+  const startOfToday = new Date();
+
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  const [questionCounts, participantCount, totalResponsesToday, totalParticipants] =
+    await Promise.all([
+      Question.aggregate([
+        { $match: { pollId: { $in: pollIds } } },
+        { $group: { _id: "$pollId", count: { $sum: 1 } } },
+      ]),
+      Participant.aggregate([
+        { $match: { pollId: { $in: pollIds } } },
+        { $group: { _id: "$pollId", count: { $sum: 1 } } },
+      ]),
+
+      Participant.countDocuments({
+        userId: user._id,
+        createdAt: { $gte: startOfToday, $lte: endOfToday },
+      }),
+
+      Participant.countDocuments({ userId: user._id }),
+    ]);
+
+  const questionMap = new Map(
+    questionCounts.map((q) => [String(q._id), q.count]),
+  );
+  const participantMap = new Map(
+    participantCount.map((p) => [String(p._id), p.count]),
   );
 
-  return result;
+  const pollResult = polls.map((poll) => {
+    const isExpired = poll.expireAt && new Date() > new Date(poll.expireAt);
+
+    return {
+      ...poll,
+      isExpired,
+      totalQuestions: questionMap.get(String(poll._id)) || 0,
+      totalParticipants: participantMap.get(String(poll._id)) || 0,
+    };
+  });
+  return {
+    pollResult,
+    totalParticipants,
+    totalResponsesToday
+  };
 };
 
 const updatePoll = async (payload, pollId, userId) => {

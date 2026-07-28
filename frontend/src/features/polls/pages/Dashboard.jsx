@@ -117,6 +117,8 @@ const RecentPollCard = ({ poll, index }) => {
 
 const Dashboard = () => {
   const [polls, setPolls] = useState([]);
+  const [totalParticipants, setTotalParticipants] = useState(0);
+  const [responsesToday, setResponsesToday] = useState(0);
   const [loading, setLoading] = useState(true);
   const { user } = useUser();
 
@@ -130,7 +132,9 @@ const Dashboard = () => {
         const [pollsRes] = await Promise.all([
           pollService.fetchAllPolls(token),
         ]);
-        setPolls(pollsRes.data || []);
+        setPolls(pollsRes.data.pollResult || []);
+        setTotalParticipants(pollsRes.data.totalParticipants);
+        setResponsesToday(pollsRes.data.totalResponsesToday);
       } catch (err) {
         console.error(err);
       } finally {
@@ -139,6 +143,7 @@ const Dashboard = () => {
     };
     load();
   }, []);
+
 
   const activePolls = polls.filter((p) => !p.isExpired).length;
   const recentPolls = [...polls].slice(0, 5);
@@ -238,18 +243,18 @@ const Dashboard = () => {
             accent="#a855f7"
           />
           <StatCard
-            index={1}
-            icon={Vote}
-            label="Total Votes"
-            value={loading ? "…" : 0}
-            accent="#6366f1"
-          />
-          <StatCard
             index={2}
             icon={Users}
             label="Participants"
-            value={loading ? "…" : 0}
+            value={loading ? "…" : totalParticipants}
             accent="#ec4899"
+          />
+          <StatCard
+            index={1}
+            icon={Vote}
+            label="Responses Today"
+            value={loading ? "…" : responsesToday}
+            accent="#6366f1"
           />
           <StatCard
             index={3}

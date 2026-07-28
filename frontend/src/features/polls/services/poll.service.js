@@ -27,7 +27,6 @@ export const pollService = {
 
       return data;
     } else {
-      console.log("Hit the route");
       const { data } = await api.patch(
         `/poll/${pollId}`,
         {
