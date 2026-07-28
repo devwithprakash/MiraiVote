@@ -9,6 +9,8 @@ import PollDetail from "../features/polls/pages/PollDetail";
 import PublicPollPage from "../features/polls/pages/PublicPollPage";
 
 import { ProtectedLayout } from "./ProtectedRoute";
+import SignInPage from "../features/auth/pages/Signin";
+import SignUpPage from "../features/auth/pages/SignUp";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +20,14 @@ export const router = createBrowserRouter([
   {
     path: "/public/:slug",
     element: <PublicPollPage />,
+  },
+  {
+    path: "/sign-in/*",
+    element: <SignInPage />,
+  },
+  {
+    path: "/sign-up/*",
+    element: <SignUpPage />,
   },
 
   // protected routes

@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { pollService } from "../services/poll.service";
 import { socket } from "../../../shared/socket/socket.js";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
 const BAR_COLORS = ["#a855f7", "#6366f1", "#ec4899", "#8b5cf6", "#06b6d4"];
@@ -40,8 +40,10 @@ const PublicPollPage = () => {
         setLoading(true);
         const response = await pollService.fetchPublicPoll(slug, token);
         setPoll(response.data);
-      } catch {
-        toast.error("Failed to load poll");
+      } catch (err) {
+        console.log(err.response?.data);
+
+        toast.error(err.response?.data?.message || "Something went wrong");
       } finally {
         setLoading(false);
       }

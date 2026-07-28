@@ -9,9 +9,14 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const server = http.createServer(app);
 
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? [process.env.CLIENT_URL]
+    : ["http://localhost:5173"];
+
 export const io = new Server(server, {
   cors: {
-    origin: ["https://miraivote.vercel.app", "http://localhost:5173"],
+    origin: allowedOrigins,
     credentials: true,
   },
   path: "/socket.io",

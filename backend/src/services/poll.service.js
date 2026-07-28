@@ -175,7 +175,8 @@ const fetchPoll = async (pollId, userId) => {
       votes,
     };
   } catch (error) {
-    console.log("error", error);
+    console.error("error in fetchPoll:", error);
+    throw error;
   }
 };
 
@@ -260,7 +261,8 @@ const updatePoll = async (payload, pollId, userId) => {
       const questions = await Question.find({ pollId: updatedPoll._id });
     });
   } catch (error) {
-    console.error(error);
+    console.error("error in updatePoll:", error);
+    throw error;
   }
 };
 
@@ -393,7 +395,8 @@ const fetchAnalytics = async (pollId, days, userId) => {
 
     return result;
   } catch (error) {
-    console.log(error);
+    console.error("error in fetchAnalytics:", error);
+    throw error;
   }
 };
 
@@ -474,7 +477,8 @@ const fetchPollBySlug = async (slug, userId) => {
       votes,
     };
   } catch (error) {
-    console.log("error", error);
+    console.error("error in fetchPollBySlug:", error);
+    throw error;
   }
 };
 

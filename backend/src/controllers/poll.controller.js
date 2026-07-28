@@ -17,11 +17,16 @@ const fetchPoll = async (req, res) => {
   ApiResponse.ok(res, "Poll fetched successfully", result);
 };
 
-const fetchPollBySlug = async (req, res) => {
-  const { userId } = getAuth(req);
-  const result = await service.fetchPollBySlug(req.params.slug, userId);
+const fetchPollBySlug = async (req, res, next) => {
+  try {
+    const { userId } = getAuth(req);
 
-  ApiResponse.ok(res, "Poll fetched successfully", result);
+    const result = await service.fetchPollBySlug(req.params.slug, userId);
+
+    ApiResponse.ok(res, "Poll fetched successfully", result);
+  } catch (error) {
+    next(error);
+  }
 };
 
 const fetchAnalytics = async (req, res) => {

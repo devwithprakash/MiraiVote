@@ -108,9 +108,7 @@ const PollDetail = () => {
   // Socket: live updates
   useEffect(() => {
     const handlePollUpdate = (data) => {
-      console.log(data);
       setPoll((prev) => {
-        console.log("Previous", prev);
         if (!prev) return prev;
         if (data.pollId !== prev._id) return prev;
 

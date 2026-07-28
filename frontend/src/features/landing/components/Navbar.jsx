@@ -6,6 +6,7 @@ import {
 } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export const Nav = () => {
   const { isSignedIn } = useUser();
@@ -17,6 +18,8 @@ export const Nav = () => {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const navigate = useNavigate();
 
   return (
     <motion.div
@@ -103,14 +106,12 @@ export const Nav = () => {
           </div>
         ) : (
           <div className="flex items-center gap-1 shrink-0">
-            <SignInButton>
-              <button className="text-sm text-gray-300 hover:text-white transition-colors duration-200 px-3.5 py-1.5 rounded-full hover:bg-white/5 cursor-pointer">
-                Login
-              </button>
-            </SignInButton>
+            <button onClick={() => navigate("/sign-in")} className="text-sm text-gray-300 hover:text-white transition-colors duration-200 px-3.5 py-1.5 rounded-full hover:bg-white/5 cursor-pointer">
+              Login
+            </button>
 
-            <SignUpButton>
               <button
+              onClick={() => navigate("/sign-up")}
                 className="text-sm font-semibold text-white pl-4 pr-4 py-1.5 rounded-full transition-all duration-300 hover:opacity-90 hover:scale-105 cursor-pointer shadow-lg shadow-purple-500/20"
                 style={{
                   background: "linear-gradient(135deg,#a855f7,#6366f1)",
@@ -118,7 +119,6 @@ export const Nav = () => {
               >
                 Get Started
               </button>
-            </SignUpButton>
           </div>
         )}
       </nav>
