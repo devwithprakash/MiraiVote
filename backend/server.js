@@ -5,12 +5,10 @@ import "dotenv/config";
 import app from "./src/app.js";
 import { connectDB } from "./src/config/db.js";
 
-
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const server = http.createServer(app);
 
-// socket io
 export const io = new Server(server, {
   cors: {
     origin: ["https://miraivote.vercel.app", "http://localhost:5173"],
@@ -19,16 +17,23 @@ export const io = new Server(server, {
   path: "/socket.io",
 });
 
-// socket connection
+// When any client will connect to websocket server, callback will run
+// when client connect a socket object will create for that user (socket)
 io.on("connection", (socket) => {
+  //socket = information of connected client
   console.log("Socket connected:", socket.id);
 
-  // join poll room
-  socket.on("join_poll", async (pollId) => {
-    // user join in this group
-    await socket.join(`poll:${pollId}`);
+  // if client send this event run this callback
+  // pollId: any data send by client
 
-    console.log(`Socket ${socket.id} joined poll:${pollId}`);
+  // in socket server we can create multiple groups
+  // every (pollId) will have separate group
+  // clients who joined the room of "pollId" will see the live synced data
+  socket.on("join_poll", async (pollId) => {
+    console.log(`${pollId} joined the room`);
+
+    // client come from join_poll event with "pollId" will join in the room acccording to that specific poll room
+    await socket.join(`poll:${pollId}`);
   });
 
   socket.on("disconnect", () => {

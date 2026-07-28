@@ -57,7 +57,7 @@ const PollDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const {getToken} = useAuth()
+  const { getToken } = useAuth();
 
   const pollUrl = `${window.location.origin}/public/${poll?.slug}`;
 
@@ -76,7 +76,7 @@ const PollDetail = () => {
     const fetchPoll = async () => {
       try {
         setLoading(true);
-        const token = await getToken()
+        const token = await getToken();
         const response = await pollService.fetchPoll(id, token);
         setPoll(response.data);
       } catch {
@@ -88,31 +88,44 @@ const PollDetail = () => {
     if (id) fetchPoll();
   }, [id]);
 
-  // Socket: join room
   useEffect(() => {
     if (!id) return;
     const onConnect = () => {
       socket.emit("join_poll", id);
     };
+
+    // Whenever the socket connects (or reconnects) run this function
+    // It registers a listener for a future event
+    // if web-socket connection is not established yet then this will run but
     socket.on("connect", onConnect);
+    // if web-socket connection is already established then then this will execute
     if (socket.connected) socket.emit("join_poll", id);
+
+    // if we didn't cleanup the "onConnect" then client might connected to multiple polls
     return () => socket.off("connect", onConnect);
   }, [id]);
 
   // Socket: live updates
   useEffect(() => {
     const handlePollUpdate = (data) => {
+      console.log(data);
       setPoll((prev) => {
+        console.log("Previous", prev);
         if (!prev) return prev;
+        if (data.pollId !== prev._id) return prev;
+
         return {
           ...prev,
           votes: data.votes,
           people: data.people,
+
           questions: prev.questions.map((question) => {
             const updatedQuestion = data.questionVotes.find(
               (q) => q.questionId === question._id,
             );
+
             if (!updatedQuestion) return question;
+
             return {
               ...question,
               totalVotes: updatedQuestion.totalVotes,
@@ -120,6 +133,7 @@ const PollDetail = () => {
                 const updatedOption = updatedQuestion.options.find(
                   (o) => o.optionId === option._id,
                 );
+
                 return updatedOption
                   ? {
                       ...option,

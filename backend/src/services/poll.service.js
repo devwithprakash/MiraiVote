@@ -193,24 +193,30 @@ const fetchAllPolls = async (userId) => {
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
-  const [questionCounts, participantCount, totalResponsesToday, totalParticipants] =
-    await Promise.all([
-      Question.aggregate([
-        { $match: { pollId: { $in: pollIds } } },
-        { $group: { _id: "$pollId", count: { $sum: 1 } } },
-      ]),
-      Participant.aggregate([
-        { $match: { pollId: { $in: pollIds } } },
-        { $group: { _id: "$pollId", count: { $sum: 1 } } },
-      ]),
+  const [
+    questionCounts,
+    participantCount,
+    totalResponsesToday,
+    totalParticipants,
+  ] = await Promise.all([
+    Question.aggregate([
+      // every doument will come and check is question.pollId is inside pollIds
+      { $match: { pollId: { $in: pollIds } } },
+      { $group: { _id: "$pollId", count: { $sum: 1 } } },
+    ]),
 
-      Participant.countDocuments({
-        userId: user._id,
-        createdAt: { $gte: startOfToday, $lte: endOfToday },
-      }),
+    Participant.aggregate([
+      { $match: { pollId: { $in: pollIds } } },
+      { $group: { _id: "$pollId", count: { $sum: 1 } } },
+    ]),
 
-      Participant.countDocuments({ userId: user._id }),
-    ]);
+    Participant.countDocuments({
+      userId: user._id,
+      createdAt: { $gte: startOfToday, $lte: endOfToday },
+    }),
+
+    Participant.countDocuments({ userId: user._id }),
+  ]);
 
   const questionMap = new Map(
     questionCounts.map((q) => [String(q._id), q.count]),
@@ -232,7 +238,7 @@ const fetchAllPolls = async (userId) => {
   return {
     pollResult,
     totalParticipants,
-    totalResponsesToday
+    totalResponsesToday,
   };
 };
 
@@ -645,6 +651,7 @@ const submitPoll = async (slug, pollInfo, anonymousId, userId) => {
     );
 
     io.to(`poll:${poll._id}`).emit("poll_updated", {
+      pollId: poll._id,
       people,
       votes,
       questionVotes,
