@@ -18,6 +18,7 @@ import { VisualAvatars } from "./components/visual-avatars";
 import { VisualDonut } from "./components/visual-donut";
 import { VisualLiveBars } from "./components/visual-live-bar";
 import { VisualShareLink } from "./components/visual-share-link";
+import { FaqSection } from "./components/faq";
 import "./landing.css";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -280,6 +281,11 @@ export default function MiraiVote() {
         </div>
         <StepperSection />
       </section>
+
+      <div className="divider mx-8" />
+
+      {/* FAQ */}
+      <FaqSection />
 
       {/* CTA */}
       <section className="py-24 px-6 text-center relative overflow-hidden">

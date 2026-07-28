@@ -92,7 +92,27 @@ const Sidebar = ({ onItemClick }) => {
               boxShadow: "0 0 16px rgba(168,85,247,0.4)",
             }}
           >
-            <Zap size={16} className="text-white" />
+            <svg
+              className="text-white"
+              width="20"
+              height="20"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <circle
+                cx="8"
+                cy="8"
+                r="6"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M5.5 9.5V6.5M8 9.5V4.5M10.5 9.5V7.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
           <span className="text-lg font-bold tracking-tight text-white">
             MiraiVote

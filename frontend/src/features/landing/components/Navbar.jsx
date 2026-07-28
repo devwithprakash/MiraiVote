@@ -7,11 +7,10 @@ import {
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-
 export const Nav = () => {
   const { isSignedIn } = useUser();
   const [scrolled, setScrolled] = useState(false);
-  
+
   const EASE = [0.16, 1, 0.3, 1];
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -38,28 +37,32 @@ export const Nav = () => {
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center cursor-pointer gap-2 shrink-0">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/30"
             style={{ background: "linear-gradient(135deg,#a855f7,#6366f1)" }}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M2 8a6 6 0 1 1 12 0A6 6 0 0 1 2 8Z"
-                stroke="white"
+              <circle
+                cx="8"
+                cy="8"
+                r="6"
+                stroke="currentColor"
                 strokeWidth="1.5"
               />
               <path
-                d="M8 5v3l2 2"
-                stroke="white"
+                d="M5.5 9.5V6.5M8 9.5V4.5M10.5 9.5V7.5"
+                stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
             </svg>
           </div>
-          <span className="font-bold text-white text-sm tracking-tight hidden sm:inline">
-            MiraiVote
-          </span>
+          <a href="#">
+            <span className="font-bold text-white text-sm tracking-tight hidden sm:inline">
+              MiraiVote
+            </span>
+          </a>
         </div>
 
         {/* Navigation Links — centered in the capsule regardless of side content width */}
@@ -77,23 +80,20 @@ export const Nav = () => {
             How It Works
           </a>
           <a
-            href="#stats"
+            href="#faq"
             className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/5 transition-colors duration-200"
           >
-            Stats
+            FAQ
           </a>
 
-          {
-            isSignedIn && (
-
-          <a
-            href="/dashboard"
-            className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/5 transition-colors duration-200"
-          >
-            Dashboard
-          </a>
-            )
-          }
+          {isSignedIn && (
+            <a
+              href="/dashboard"
+              className="px-3.5 py-1.5 rounded-full hover:text-white hover:bg-white/5 transition-colors duration-200"
+            >
+              Dashboard
+            </a>
+          )}
         </div>
 
         {/* Auth actions */}

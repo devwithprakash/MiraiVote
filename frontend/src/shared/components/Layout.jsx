@@ -13,12 +13,10 @@ export const Layout = () => {
       className="flex h-screen overflow-hidden"
       style={{ background: "#09090f", fontFamily: "'Inter', sans-serif" }}
     >
-      {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0">
         <Sidebar />
       </div>
 
-      {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
@@ -45,9 +43,7 @@ export const Layout = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header */}
         <header
           className="h-16 flex items-center justify-between px-4 sm:px-6 shrink-0"
           style={{
@@ -57,7 +53,6 @@ export const Layout = () => {
           }}
         >
           <div className="flex items-center gap-3">
-            {/* Mobile: show logo always visible */}
             <div className="flex items-center gap-2 lg:hidden">
               <button
                 onClick={() => setIsSidebarOpen(true)}
@@ -72,7 +67,21 @@ export const Layout = () => {
                   background: "linear-gradient(135deg, #a855f7, #6366f1)",
                 }}
               >
-                <Zap size={14} className="text-white" />
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M5.5 9.5V6.5M8 9.5V4.5M10.5 9.5V7.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </div>
               <span className="text-sm font-semibold tracking-tight text-white">
                 MiraiVote
