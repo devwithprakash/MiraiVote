@@ -30,7 +30,7 @@ import {
   Area,
 } from "recharts";
 import { pollService } from "../services/poll.service.js";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {

@@ -1,14 +1,8 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  ListChecks,
-  Plus,
-  LogOut,
-  Zap,
-} from "lucide-react";
+import { LayoutDashboard, ListChecks, Plus, LogOut, Zap } from "lucide-react";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
@@ -39,7 +33,9 @@ const SidebarItem = ({ icon: Icon, label, to, onClick }) => (
         {isActive && (
           <div
             className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
-            style={{ background: "linear-gradient(to bottom, #a855f7, #6366f1)" }}
+            style={{
+              background: "linear-gradient(to bottom, #a855f7, #6366f1)",
+            }}
           />
         )}
         <Icon
@@ -98,16 +94,20 @@ const Sidebar = ({ onItemClick }) => {
           >
             <Zap size={16} className="text-white" />
           </div>
-          <span
-            className="text-lg font-bold tracking-tight text-white"
-          >
+          <span className="text-lg font-bold tracking-tight text-white">
             MiraiVote
           </span>
         </Link>
       </div>
 
       {/* Divider */}
-      <div style={{ height: "1px", background: "rgba(255,255,255,0.05)", margin: "0 20px" }} />
+      <div
+        style={{
+          height: "1px",
+          background: "rgba(255,255,255,0.05)",
+          margin: "0 20px",
+        }}
+      />
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
@@ -129,7 +129,13 @@ const Sidebar = ({ onItemClick }) => {
       </nav>
 
       {/* Divider */}
-      <div style={{ height: "1px", background: "rgba(255,255,255,0.05)", margin: "0 20px" }} />
+      <div
+        style={{
+          height: "1px",
+          background: "rgba(255,255,255,0.05)",
+          margin: "0 20px",
+        }}
+      />
 
       {/* User + Sign Out */}
       <div className="px-3 py-4 space-y-1">
@@ -148,7 +154,9 @@ const Sidebar = ({ onItemClick }) => {
             ) : (
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                style={{ background: "linear-gradient(135deg, #a855f7, #6366f1)" }}
+                style={{
+                  background: "linear-gradient(135deg, #a855f7, #6366f1)",
+                }}
               >
                 {(user.fullName || user.firstName || "U")[0].toUpperCase()}
               </div>
@@ -157,7 +165,10 @@ const Sidebar = ({ onItemClick }) => {
               <p className="text-sm font-medium text-white truncate">
                 {user.fullName || user.firstName || "User"}
               </p>
-              <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <p
+                className="text-[11px] truncate"
+                style={{ color: "rgba(255,255,255,0.35)" }}
+              >
                 {user.primaryEmailAddress?.emailAddress}
               </p>
             </div>

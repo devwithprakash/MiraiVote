@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { pollService } from "../services/poll.service";
 import { socket } from "../../../shared/socket/socket.js";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
 const BAR_COLORS = ["#a855f7", "#6366f1", "#ec4899", "#8b5cf6", "#06b6d4"];
@@ -50,13 +50,14 @@ const PublicPollPage = () => {
   }, [slug]);
 
   // Socket: join poll room for live updates
+  const pollId = poll?._id;
   useEffect(() => {
-    if (!slug) return;
-    const onConnect = () => socket.emit("join_poll", slug);
+    if (!pollId) return;
+    const onConnect = () => socket.emit("join_poll", pollId);
     socket.on("connect", onConnect);
-    if (socket.connected) socket.emit("join_poll", slug);
+    if (socket.connected) socket.emit("join_poll", pollId);
     return () => socket.off("connect", onConnect);
-  }, [slug]);
+  }, [pollId]);
 
   // Socket: live result updates
   useEffect(() => {
@@ -111,14 +112,13 @@ const PublicPollPage = () => {
       setSubmitted(true);
       toast.success(response.data.message || "Vote submitted!");
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div
@@ -163,7 +163,6 @@ const PublicPollPage = () => {
     );
   }
 
-  // ── Success State ──────────────────────────────────────────────────────────
   const showResults = submitted || isExpired;
 
   return (

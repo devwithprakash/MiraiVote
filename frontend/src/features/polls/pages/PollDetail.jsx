@@ -12,7 +12,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { pollService } from "../services/poll.service.js";
 import { socket } from "../../../shared/socket/socket.js";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {

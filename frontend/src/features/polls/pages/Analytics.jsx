@@ -18,7 +18,7 @@ import {
 } from "recharts";
 
 import { pollService } from "../services/poll.service.js";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 
 const StatCard = ({ icon: Icon, label, value }) => (
   <div className="bg-[#0f172a]/50 border border-slate-800 rounded-2xl p-5 flex flex-col gap-2">
@@ -45,8 +45,6 @@ const Analytics = () => {
   // analytics response
   const [analytics, setAnalytics] = useState(null);
 
-
-
   useEffect(() => {
     const fetchPolls = async () => {
       try {
@@ -61,13 +59,10 @@ const Analytics = () => {
     fetchPolls();
   }, []);
 
-
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await pollService.fetchAnalytics(
-          selectedPoll
-        );
+        const response = await pollService.fetchAnalytics(selectedPoll);
 
         setAnalytics(response.data);
       } catch (error) {
@@ -79,7 +74,6 @@ const Analytics = () => {
 
     fetchAnalytics();
   }, [selectedPoll]);
-
 
   const pieData = [
     {
