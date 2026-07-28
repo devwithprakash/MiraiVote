@@ -1,7 +1,6 @@
 import { io } from "socket.io-client";
 
-const BACKEND_URL = "http://localhost:8000";
-
+const BACKEND_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:8000";
 
 export const socket = io(BACKEND_URL, { withCredentials: true });
 
@@ -11,6 +10,6 @@ socket.on("connect", () => {
 });
 
 socket.on("connect_error", (err) => {
-  console.log(err)
+  console.log(err);
   console.log("Socket connection error:", err.message);
 });
