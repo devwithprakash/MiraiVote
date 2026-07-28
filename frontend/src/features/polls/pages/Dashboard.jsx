@@ -10,6 +10,7 @@ import {
   ArrowRight,
   TrendingUp,
   Vote,
+  HelpCircle,
 } from "lucide-react";
 import { pollService } from "../services/poll.service.js";
 import { useAuth } from "@clerk/clerk-react";
@@ -84,25 +85,59 @@ const RecentPollCard = ({ poll, index }) => {
           e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
         }}
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-4 min-w-0">
           <div
-            className="w-2 h-2 rounded-full shrink-0"
+            className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0"
             style={{
-              background: isExpired ? "rgba(255,255,255,0.2)" : "#a855f7",
-              boxShadow: isExpired ? "none" : "0 0 8px rgba(168,85,247,0.6)",
+              background: isExpired
+                ? "rgba(255,255,255,0.03)"
+                : "rgba(168,85,247,0.1)",
+              border: `1px solid ${isExpired ? "rgba(255,255,255,0.05)" : "rgba(168,85,247,0.2)"}`,
             }}
-          />
+          >
+            <ListChecks
+              size={18}
+              style={{ color: isExpired ? "rgba(255,255,255,0.4)" : "#c084fc" }}
+            />
+          </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">
-              {poll.title}
-            </p>
-            <p
-              className="text-xs mt-0.5"
-              style={{ color: "rgba(255,255,255,0.35)" }}
-            >
-              {poll.totalQuestions ?? 0} Questions ·{" "}
-              {poll.totalParticipants ?? 0} participants
-            </p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <p className="text-sm font-semibold text-white truncate">
+                {poll.title}
+              </p>
+              {!isExpired ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
+                  style={{
+                    background: "rgba(168,85,247,0.12)",
+                    border: "1px solid rgba(168,85,247,0.25)",
+                    color: "#c084fc",
+                  }}
+                >
+                  <span className="w-1 h-1 rounded-full bg-purple-400 animate-pulse" />
+                  Live
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "rgba(255,255,255,0.4)",
+                  }}
+                >
+                  Ended
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-xs text-white/40">
+              <span className="flex items-center gap-1.5">
+                <Users size={12} /> {poll.totalParticipants ?? 0}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <HelpCircle size={12} /> {poll.totalQuestions ?? 0}
+              </span>
+            </div>
           </div>
         </div>
         <ArrowRight
@@ -143,10 +178,8 @@ const Dashboard = () => {
     load();
   }, []);
 
-
   const activePolls = polls.filter((p) => !p.isExpired).length;
   const recentPolls = [...polls].slice(0, 5);
-
 
   return (
     <div className="space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -161,7 +194,10 @@ const Dashboard = () => {
           <h1 className="text-xl font-semibold text-white tracking-tight">
             Overview
           </h1>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.38)" }}>
+          <p
+            className="text-xs mt-0.5"
+            style={{ color: "rgba(255,255,255,0.38)" }}
+          >
             {activePolls > 0
               ? `${activePolls} active poll${activePolls !== 1 ? "s" : ""} running`
               : "No active polls — create one to start collecting responses"}
