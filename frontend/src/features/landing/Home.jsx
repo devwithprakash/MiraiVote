@@ -1,13 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  Zap,
-  Link2,
-  Lock,
-  Users,
-  BarChart3,
-  ListChecks,
-} from "lucide-react";
+import { Zap, Link2, Lock, Users, BarChart3, ListChecks } from "lucide-react";
 import { Nav } from "./components/Navbar";
 import { LivePollCard } from "./components/live-poll-card";
 import { FeatureCard } from "./components/features";
@@ -113,44 +106,32 @@ export default function MiraiVote() {
 
         <div className="fade-up-4 flex flex-col sm:flex-row gap-3 justify-center mb-4">
           <Link
-            to="/login"
+            to="/dashboard"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:opacity-90 hover:scale-105 shadow-lg"
             style={{
               background: "linear-gradient(135deg,#a855f7,#6366f1)",
               boxShadow: "0 0 30px rgba(139,92,246,0.35)",
             }}
           >
-            Create your first poll →
+            Go to Dashboard →
           </Link>
-          <Link
-            to="/login"
+
+          <a
+            href="#features"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-gray-300 transition-all duration-300 hover:text-white hover:bg-white/5"
             style={{ border: "1px solid rgba(255,255,255,0.12)" }}
           >
-            I already have an account
-          </Link>
+            See how it works
+          </a>
         </div>
 
-        <div className="fade-up-4 flex items-center justify-center gap-5 text-xs text-gray-500 mb-14">
-          <span className="flex items-center gap-1">
-            <span className="text-purple-400">✓</span> Free to start
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="text-purple-400">✓</span> No credit card
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="text-purple-400">✓</span> Anonymous voting
-          </span>
-        </div>
-
-        <div className="float max-w-lg mx-auto">
+        <div className="float mt-20 max-w-lg mx-auto">
           <LivePollCard />
         </div>
       </section>
 
       <div className="divider mx-8" />
 
-      {/* Features */}
       <section id="features" className="py-24 px-6 relative">
         <div className="max-w-4xl mx-auto text-center mb-16 relative">
           <motion.span
@@ -304,7 +285,7 @@ export default function MiraiVote() {
           in.
         </p>
         <Link
-          to="/register"
+          to="/dashboard"
           className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-base text-white transition-all duration-300 hover:opacity-90 hover:scale-105"
           style={{
             background: "linear-gradient(135deg,#a855f7,#6366f1)",
@@ -327,13 +308,20 @@ export default function MiraiVote() {
               <div className="flex items-center gap-2 mb-3">
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg,#a855f7,#6366f1)" }}
+                  style={{
+                    background: "linear-gradient(135deg,#a855f7,#6366f1)",
+                  }}
                 >
                   <Zap size={14} className="text-white" />
                 </div>
-                <span className="font-semibold text-white text-sm tracking-tight">MiraiVote</span>
+                <span className="font-semibold text-white text-sm tracking-tight">
+                  MiraiVote
+                </span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <p
+                className="text-xs leading-relaxed"
+                style={{ color: "rgba(255,255,255,0.35)" }}
+              >
                 Real-time polling for teams, classrooms, and live audiences.
               </p>
             </div>
@@ -341,17 +329,59 @@ export default function MiraiVote() {
             {/* Links */}
             <div className="flex flex-wrap gap-12">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.25)" }}>Product</p>
+                <p
+                  className="text-[10px] font-bold uppercase tracking-widest mb-3"
+                  style={{ color: "rgba(255,255,255,0.25)" }}
+                >
+                  Product
+                </p>
                 <ul className="space-y-2">
-                  <li><a href="#features" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>Features</a></li>
-                  <li><a href="#steps" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>How it works</a></li>
+                  <li>
+                    <a
+                      href="#features"
+                      className="text-xs transition-colors hover:text-white"
+                      style={{ color: "rgba(255,255,255,0.45)" }}
+                    >
+                      Features
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#steps"
+                      className="text-xs transition-colors hover:text-white"
+                      style={{ color: "rgba(255,255,255,0.45)" }}
+                    >
+                      How it works
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.25)" }}>Account</p>
+                <p
+                  className="text-[10px] font-bold uppercase tracking-widest mb-3"
+                  style={{ color: "rgba(255,255,255,0.25)" }}
+                >
+                  Account
+                </p>
                 <ul className="space-y-2">
-                  <li><a href="/login" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>Sign in</a></li>
-                  <li><a href="/register" className="text-xs transition-colors hover:text-white" style={{ color: "rgba(255,255,255,0.45)" }}>Get started</a></li>
+                  <li>
+                    <a
+                      href="/login"
+                      className="text-xs transition-colors hover:text-white"
+                      style={{ color: "rgba(255,255,255,0.45)" }}
+                    >
+                      Sign in
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/register"
+                      className="text-xs transition-colors hover:text-white"
+                      style={{ color: "rgba(255,255,255,0.45)" }}
+                    >
+                      Get started
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -361,10 +391,16 @@ export default function MiraiVote() {
             className="mt-10 pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
             style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
           >
-            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+            <p
+              className="text-[11px]"
+              style={{ color: "rgba(255,255,255,0.25)" }}
+            >
               © {new Date().getFullYear()} MiraiVote. All rights reserved.
             </p>
-            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.2)" }}>
+            <p
+              className="text-[11px]"
+              style={{ color: "rgba(255,255,255,0.2)" }}
+            >
               Built for real conversations.
             </p>
           </div>

@@ -40,35 +40,35 @@ export const Nav = () => {
         }}
       >
         {/* Logo */}
-        <div className="flex items-center cursor-pointer gap-2 shrink-0">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/30"
-            style={{ background: "linear-gradient(135deg,#a855f7,#6366f1)" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <circle
-                cx="8"
-                cy="8"
-                r="6"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M5.5 9.5V6.5M8 9.5V4.5M10.5 9.5V7.5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-          <a href="#">
+        <a href="#">
+          <div className="flex items-center cursor-pointer gap-2 shrink-0">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/30"
+              style={{ background: "linear-gradient(135deg,#a855f7,#6366f1)" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <circle
+                  cx="8"
+                  cy="8"
+                  r="6"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M5.5 9.5V6.5M8 9.5V4.5M10.5 9.5V7.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+
             <span className="font-bold text-white text-sm tracking-tight hidden sm:inline">
               MiraiVote
             </span>
-          </a>
-        </div>
+          </div>
+        </a>
 
-        {/* Navigation Links — centered in the capsule regardless of side content width */}
         <div className="hidden md:flex items-center gap-1 text-sm text-gray-400 font-medium absolute left-1/2 -translate-x-1/2">
           <a
             href="#features"
@@ -99,26 +99,28 @@ export const Nav = () => {
           )}
         </div>
 
-        {/* Auth actions */}
         {isSignedIn ? (
           <div className="shrink-0">
             <UserButton />
           </div>
         ) : (
           <div className="flex items-center gap-1 shrink-0">
-            <button onClick={() => navigate("/sign-in")} className="text-sm text-gray-300 hover:text-white transition-colors duration-200 px-3.5 py-1.5 rounded-full hover:bg-white/5 cursor-pointer">
+            <button
+              onClick={() => navigate("/sign-in")}
+              className="text-sm text-gray-300 hover:text-white transition-colors duration-200 px-3.5 py-1.5 rounded-full hover:bg-white/5 cursor-pointer"
+            >
               Login
             </button>
 
-              <button
+            <button
               onClick={() => navigate("/sign-up")}
-                className="text-sm font-semibold text-white pl-4 pr-4 py-1.5 rounded-full transition-all duration-300 hover:opacity-90 hover:scale-105 cursor-pointer shadow-lg shadow-purple-500/20"
-                style={{
-                  background: "linear-gradient(135deg,#a855f7,#6366f1)",
-                }}
-              >
-                Get Started
-              </button>
+              className="text-sm font-semibold text-white pl-4 pr-4 py-1.5 rounded-full transition-all duration-300 hover:opacity-90 hover:scale-105 cursor-pointer shadow-lg shadow-purple-500/20"
+              style={{
+                background: "linear-gradient(135deg,#a855f7,#6366f1)",
+              }}
+            >
+              Get Started
+            </button>
           </div>
         )}
       </nav>
