@@ -7,10 +7,10 @@ import PollAnalytics from "../features/polls/pages/PollAnalytics";
 import CreatePoll from "../features/polls/pages/CreatePoll";
 import PollDetail from "../features/polls/pages/PollDetail";
 import PublicPollPage from "../features/polls/pages/PublicPollPage";
+import SignInPage from "../features/auth/pages/SignIn";
+import SignUpPage from "../features/auth/pages/SignUp";
 
 import { ProtectedLayout } from "./ProtectedRoute";
-import SignInPage from "../features/auth/pages/Signin";
-import SignUpPage from "../features/auth/pages/SignUp";
 
 export const router = createBrowserRouter([
   {
