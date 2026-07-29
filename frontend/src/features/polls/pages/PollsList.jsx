@@ -223,13 +223,13 @@ const PollCard = ({ poll, index, onDelete }) => {
 
       <div style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
 
-      <div className="flex items-center px-5 py-3 gap-2">
+      <div className="flex items-center px-4 py-3 gap-2">
         <button
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/poll/${poll._id}`);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          className="flex items-center cursor-pointer gap-1.5 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all"
           style={{
             color: "rgba(255,255,255,0.5)",
             background: "rgba(255,255,255,0.04)",
@@ -255,7 +255,7 @@ const PollCard = ({ poll, index, onDelete }) => {
             e.stopPropagation();
             navigate(`/polls/${poll._id}/analytics`);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          className="flex items-center cursor-pointer gap-1.5 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all"
           style={{
             color: "rgba(255,255,255,0.5)",
             background: "rgba(255,255,255,0.04)",
@@ -281,7 +281,7 @@ const PollCard = ({ poll, index, onDelete }) => {
             e.stopPropagation();
             navigate(`/polls/${poll._id}/edit`);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          className="flex items-center cursor-pointer gap-1.5 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all"
           style={{
             color: "rgba(255,255,255,0.5)",
             background: "rgba(255,255,255,0.04)",
@@ -309,7 +309,7 @@ const PollCard = ({ poll, index, onDelete }) => {
             e.stopPropagation();
             onDelete(poll);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          className="flex items-center cursor-pointer gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
           style={{
             color: "rgba(248,113,113,0.6)",
             background: "rgba(239,68,68,0.05)",
@@ -481,7 +481,7 @@ const PollsList = () => {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            className="px-4 py-1.5 rounded-lg cursor-pointer text-xs font-semibold transition-all"
             style={
               filter === key
                 ? {

@@ -67,7 +67,7 @@ export const Layout = () => {
                   background: "linear-gradient(135deg, #a855f7, #6366f1)",
                 }}
               >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <svg className="text-white" width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <circle
                     cx="8"
                     cy="8"

@@ -40,23 +40,29 @@ const StatCard = ({ icon: Icon, label, value, accent, index }) => (
       className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-20"
       style={{ background: accent }}
     />
-    <div className="flex items-start justify-between">
-      <div>
-        <p
-          className="text-xs font-semibold uppercase tracking-widest mb-3"
-          style={{ color: "rgba(255,255,255,0.35)" }}
-        >
-          {label}
-        </p>
-        <p className="text-xl font-semibold text-white">{value ?? "—"}</p>
-      </div>
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: `${accent}22`, border: `1px solid ${accent}33` }}
-      >
-        <Icon size={18} style={{ color: accent }} />
-      </div>
-    </div>
+<div className="flex items-start justify-between gap-3">
+  <div className="min-w-0 flex-1">
+    <p
+      className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/35 break-words"
+    >
+      {label}
+    </p>
+
+    <p className="text-lg sm:text-xl font-semibold text-white break-words">
+      {value ?? "—"}
+    </p>
+  </div>
+
+  <div
+    className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-xl"
+    style={{
+      background: `${accent}22`,
+      border: `1px solid ${accent}33`,
+    }}
+  >
+    <Icon size={18} style={{ color: accent }} />
+  </div>
+</div>
   </motion.div>
 );
 
@@ -235,7 +241,7 @@ const Dashboard = () => {
           <StatCard
             index={0}
             icon={ListChecks}
-            label="Total Polls"
+            label="Polls"
             value={loading ? "…" : polls.length}
             accent="#a855f7"
           />
@@ -249,14 +255,14 @@ const Dashboard = () => {
           <StatCard
             index={1}
             icon={Vote}
-            label="Responses Today"
+            label="Today"
             value={loading ? "…" : responsesToday}
             accent="#6366f1"
           />
           <StatCard
             index={3}
             icon={Zap}
-            label="Active Polls"
+            label="Active"
             value={loading ? "…" : activePolls}
             accent="#8b5cf6"
           />

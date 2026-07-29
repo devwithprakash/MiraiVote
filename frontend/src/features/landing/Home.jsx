@@ -107,7 +107,7 @@ export default function MiraiVote() {
         <div className="fade-up-4 flex flex-col sm:flex-row gap-3 justify-center mb-4">
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:opacity-90 hover:scale-105 shadow-lg"
+            className="inline-flex  items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:opacity-90 hover:scale-105 shadow-lg"
             style={{
               background: "linear-gradient(135deg,#a855f7,#6366f1)",
               boxShadow: "0 0 30px rgba(139,92,246,0.35)",
@@ -117,8 +117,8 @@ export default function MiraiVote() {
           </Link>
 
           <a
-            href="#features"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-gray-300 transition-all duration-300 hover:text-white hover:bg-white/5"
+            href="#steps"
+            className="inline-flex items-center gap-2 px-6 py-3 justify-center rounded-xl font-semibold text-sm text-gray-300 transition-all duration-300 hover:text-white hover:bg-white/5"
             style={{ border: "1px solid rgba(255,255,255,0.12)" }}
           >
             See how it works

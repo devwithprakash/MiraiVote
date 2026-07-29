@@ -5,8 +5,7 @@ import { PenSquare, Share2, Radio } from "lucide-react";
 const EASE = [0.16, 1, 0.3, 1];
 
 export const StepperSection = () => {
-
-const steps = [
+  const steps = [
     {
       Icon: PenSquare,
       title: "Create a poll",
@@ -46,7 +45,7 @@ const steps = [
             }}
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true }}
             transition={{ duration: 1.1, ease: EASE, delay: 0.2 }}
           />
         </div>
@@ -56,7 +55,7 @@ const steps = [
             key={step.title}
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6, delay: i * 0.18, ease: EASE }}
             className="relative flex md:flex-col items-start md:items-center gap-4 md:gap-0 md:text-center"
           >
@@ -72,7 +71,7 @@ const steps = [
             <motion.div
               initial={{ scale: 0.7, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true, margin: "-80px" }}
+              viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.18 + 0.15, ease: EASE }}
               className="relative z-10 flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
               style={{
