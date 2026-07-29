@@ -9,10 +9,7 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const server = http.createServer(app);
 
-const allowedOrigins =
-  process.env.NODE_ENV === "production"
-    ? [process.env.CLIENT_URL]
-    : ["http://localhost:5173"];
+const allowedOrigins = process.env.CLIENT_URL;
 
 console.log("NODE_ENV:", process.env.NODE_ENV);
 console.log("CLIENT_URL:", process.env.CLIENT_URL);
