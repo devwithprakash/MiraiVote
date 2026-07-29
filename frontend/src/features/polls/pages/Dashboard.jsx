@@ -54,7 +54,7 @@ const StatCard = ({ icon: Icon, label, value, accent, index }) => (
   </div>
 
   <div
-    className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-xl"
+    className="flex h-6 w-6 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-md  sm:rounded-xl"
     style={{
       background: `${accent}22`,
       border: `1px solid ${accent}33`,
@@ -248,7 +248,7 @@ const Dashboard = () => {
           <StatCard
             index={2}
             icon={Users}
-            label="Participants"
+            label="Participant"
             value={loading ? "…" : totalParticipants}
             accent="#ec4899"
           />
