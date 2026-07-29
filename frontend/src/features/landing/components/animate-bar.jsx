@@ -2,28 +2,39 @@ import { useEffect, useState } from "react";
 
 export const AnimatedBar = ({ label, emoji, pct, color, delay = 0 }) => {
   const [width, setWidth] = useState(0);
+
   useEffect(() => {
-    // rAF ensures the browser paints the 0% state first, so the transition
-    // to the target width is always smooth instead of sometimes snapping in.
     const t = setTimeout(() => {
       requestAnimationFrame(() => setWidth(pct));
     }, 500 + delay);
+
     return () => clearTimeout(t);
   }, [pct, delay]);
+
   return (
-    <div className="mb-3">
-      <div className="flex justify-between text-sm mb-1">
-        <span className="text-gray-200">
-          {label} {emoji}
+    <div className="mb-4">
+      {/* Header */}
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 text-base">{emoji}</span>
+
+          <span className="truncate text-sm font-medium text-gray-200">
+            {label}
+          </span>
+        </div>
+
+        <span className="shrink-0 text-sm font-semibold text-gray-300">
+          {pct}%
         </span>
-        <span className="text-gray-300 font-medium">{pct}%</span>
       </div>
+
+      {/* Progress Bar */}
       <div
-        className="h-2 rounded-full overflow-hidden"
+        className="h-2 overflow-hidden rounded-full"
         style={{ background: "rgba(255,255,255,0.08)" }}
       >
         <div
-          className="h-2 rounded-full"
+          className="h-full rounded-full"
           style={{
             width: `${width}%`,
             background: color,

@@ -93,15 +93,15 @@ export default function MiraiVote() {
           </span>
         </div>
 
-        <h1 className="fade-up-2 text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mb-4 max-w-3xl mx-auto">
+        <h1 className="fade-up-2 text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mb-4 max-w-xs sm:max-w-2xl md:max-w-3xl mx-auto">
           Real-time polls that
           <br />
-          <span className="gradient-text">feel like the room</span>
+          <span className="gradient-text">drive decisions</span>
         </h1>
 
-        <p className="fade-up-3 text-gray-400 text-lg max-w-xl mx-auto mb-8 leading-relaxed">
-          MiraiVote lets you create a poll, share a link, and watch your
-          audience respond live — with clean analytics for every question.
+        <p className="fade-up-3 text-gray-400 text-base sm:text-lg max-w-sm sm:max-w-xl mx-auto mb-8 leading-relaxed px-2">
+          Create a poll in seconds and watch votes roll in live — no app, no
+          sign-up, no delay.
         </p>
 
         <div className="fade-up-4 flex flex-col sm:flex-row gap-3 justify-center mb-4">

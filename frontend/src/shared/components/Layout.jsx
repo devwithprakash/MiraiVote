@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { Menu, X, Bell, Zap } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 
 export const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const navigate = useNavigate();
   const { user } = useUser();
 
   return (
@@ -62,12 +64,19 @@ export const Layout = () => {
                 <Menu size={18} className="text-white" />
               </button>
               <div
+                onClick={() => navigate("/")}
                 className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                 style={{
                   background: "linear-gradient(135deg, #a855f7, #6366f1)",
                 }}
               >
-                <svg className="text-white" width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <svg
+                  className="text-white"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
                   <circle
                     cx="8"
                     cy="8"
@@ -83,7 +92,10 @@ export const Layout = () => {
                   />
                 </svg>
               </div>
-              <span className="text-sm font-semibold tracking-tight text-white">
+              <span
+                onClick={() => navigate("/")}
+                className="text-sm font-semibold hidden md:block tracking-tight text-white"
+              >
                 MiraiVote
               </span>
             </div>
