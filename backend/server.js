@@ -14,6 +14,10 @@ const allowedOrigins =
     ? [process.env.CLIENT_URL]
     : ["http://localhost:5173"];
 
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
+console.log("allowedOrigins:", allowedOrigins);
+
 export const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
