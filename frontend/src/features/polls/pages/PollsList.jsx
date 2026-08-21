@@ -411,11 +411,13 @@ const PollsList = () => {
     }
   };
 
-  const filtered = polls.filter((p) => {
-    if (filter === "active") return !p.isExpired;
-    if (filter === "ended") return p.isExpired;
-    return true;
-  });
+  const filtered = polls
+    .filter((p) => {
+      if (filter === "active") return !p.isExpired;
+      if (filter === "ended") return p.isExpired;
+      return true;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const FILTERS = [
     { key: "all", label: `All (${polls.length})` },

@@ -183,7 +183,7 @@ const fetchPoll = async (pollId, userId) => {
 const fetchAllPolls = async (userId) => {
   const user = await getUser(userId);
 
-  const polls = await Poll.find({ creatorId: user._id }).lean();
+  const polls = await Poll.find({ creatorId: user._id }).sort({createdAt: -1}).lean()
 
   const pollIds = polls.map((p) => p._id);
 
