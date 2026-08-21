@@ -1,28 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  BarChart3,
   Users,
-  Vote,
-  Activity,
   TrendingUp,
   ListChecks,
-  Clock3,
-  ActivityIcon,
   CalendarDays,
-  BadgeCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   Tooltip,
-  Legend,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -30,7 +18,7 @@ import {
   Area,
 } from "recharts";
 import { pollService } from "../services/poll.service.js";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import { useAuth } from "@clerk/clerk-react";
 
 const FADE_UP = {
@@ -43,6 +31,11 @@ const FADE_UP = {
 };
 
 const CHART_COLORS = ["#a855f7", "#6366f1", "#ec4899", "#8b5cf6", "#06b6d4"];
+
+const periods = [
+  { label: "Last 7 days", value: 7 },
+  { label: "Last 30 days", value: 30 },
+];
 
 const TOOLTIP_STYLE = {
   contentStyle: {
@@ -92,29 +85,6 @@ const StatCard = ({ icon: Icon, label, value, accent, index }) => (
   </motion.div>
 );
 
-const ChartCard = ({ title, subtitle, children, span, index }) => (
-  <motion.div
-    custom={index}
-    initial="hidden"
-    animate="show"
-    variants={FADE_UP}
-    className={`rounded-2xl p-6 ${span === 2 ? "xl:col-span-2" : ""}`}
-    style={{
-      background: "rgba(255,255,255,0.025)",
-      border: "1px solid rgba(255,255,255,0.07)",
-    }}
-  >
-    <div className="mb-6">
-      <h3 className="text-base font-bold text-white">{title}</h3>
-      {subtitle && (
-        <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
-          {subtitle}
-        </p>
-      )}
-    </div>
-    {children}
-  </motion.div>
-);
 
 const PerQuestionBar = ({ question, index }) => {
   const maxVotes = Math.max(...question.options.map((o) => o.votes || 0), 1);
@@ -213,7 +183,7 @@ const PollAnalytics = () => {
       }
     };
     if (id) load();
-  }, [id]);
+  }, [id, selectedDays]);
 
   const pieData = [
     { name: "Votes", value: analytics?.stats?.totalVotes || 0 },
@@ -229,7 +199,6 @@ const PollAnalytics = () => {
     votes: item.count,
   }));
   const questions = poll?.questions || [];
-
 
   return (
     <div className="space-y-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -291,7 +260,6 @@ const PollAnalytics = () => {
         </div>
       ) : (
         <>
-          {/* Stat Cards */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
               index={0}
@@ -300,6 +268,7 @@ const PollAnalytics = () => {
               value={analytics?.totalParticipants ?? 0}
               accent="#a855f7"
             />
+
             <StatCard
               index={1}
               icon={ListChecks}
@@ -323,14 +292,47 @@ const PollAnalytics = () => {
             />
           </div>
 
-          {/* Charts */}
+
           <div className="grid grid-cols-1 gap-5">
-            {/* Area Chart */}
-            <ChartCard
-              index={4}
-              title="Vote Activity"
-              subtitle="Cumulative votes over time"
+            <motion.div
+              custom={4}
+              initial="hidden"
+              animate="show"
+              variants={FADE_UP}
+              className="rounded-2xl p-6"
+              style={{
+                background: "rgba(255,255,255,0.025)",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}
             >
+              <div className="flex items-start justify-between mb-6 gap-3 flex-wrap">
+                <div>
+                  <h3 className="text-base font-bold text-white">Vote Activity</h3>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    Cumulative votes over time
+                  </p>
+                </div>
+                <div
+                  className="flex items-center gap-1 p-1 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+                >
+                  {periods.map((p) => (
+                    <button
+                      key={p.value}
+                      onClick={() => setSelectedDays(p.value)}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer"
+                      style={{
+                        background: selectedDays === p.value ? "rgba(168,85,247,0.25)" : "transparent",
+                        color: selectedDays === p.value ? "#c084fc" : "rgba(255,255,255,0.4)",
+                        border: selectedDays === p.value ? "1px solid rgba(168,85,247,0.35)" : "1px solid transparent",
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={timelineData}>
@@ -378,7 +380,7 @@ const PollAnalytics = () => {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </ChartCard>
+            </motion.div>
           </div>
 
           {/* Per-Question Breakdown */}

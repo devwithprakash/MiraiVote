@@ -18,7 +18,7 @@ import {
 } from "recharts";
 
 import { pollService } from "../services/poll.service.js";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 const StatCard = ({ icon: Icon, label, value }) => (
   <div className="bg-[#0f172a]/50 border border-slate-800 rounded-2xl p-5 flex flex-col gap-2">
@@ -35,6 +35,7 @@ const StatCard = ({ icon: Icon, label, value }) => (
 );
 
 const COLORS = ["#3b82f6", "#10b981"];
+
 
 const Analytics = () => {
   const [selectedPoll, setSelectedPoll] = useState("all");
@@ -97,7 +98,10 @@ const Analytics = () => {
       {/* Header */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <h1
+            className="text-xl font-semibold tracking-tight text-white"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
             Analytics
           </h1>
 
@@ -121,6 +125,7 @@ const Analytics = () => {
           ))}
         </select>
       </div>
+
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
