@@ -190,7 +190,6 @@ const PollAnalytics = () => {
     { name: "Participants", value: analytics?.stats?.totalParticipants || 0 },
   ];
 
-  const engagementData = analytics?.engagementData || [];
   const timelineData = analytics?.timeline.map((item) => ({
     name: new Date(item.date).toLocaleDateString("en-IN", {
       day: "numeric",
